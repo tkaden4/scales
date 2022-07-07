@@ -1,23 +1,36 @@
 import React from "react";
-import { isNaturalNote, Note } from "../src/note";
+import { BrowserRouter, Link, useLocation } from "react-router-dom";
+import { allNotes } from "../src/note";
 import { allScales, circleOfFifths, keyNotes, majorScale } from "../src/scale";
 import { getFrets } from "../src/strings";
-import { allTunings, Tuning } from "../src/tunings";
+import { allTunings } from "../src/tunings";
 import { Fret, Fretboard } from "./Fretboard";
 
 const selectedColor = "#fe2040c0";
 const unselectedColor = "#20b2aad0";
 
-function chooseNatural(notes: Note[]): Note {
-  const filtered = notes.filter((x) => isNaturalNote(x));
-  return filtered.length === 0 ? notes[0] : filtered[0];
+// A custom hook that builds on useLocation to parse
+// the query string for you.
+function useQuery() {
+  const { search } = useLocation();
+
+  return React.useMemo(() => new URLSearchParams(search), [search]);
 }
 
-export function App() {
-  const [selectedTuning, setSelectedTuning] = React.useState<Tuning>(allTunings[0]);
-  const [keyCenter, setKeyCenter] = React.useState<Note>("E");
-  const [selectedScale, setSelectedScale] = React.useState(majorScale);
+type ScaleToolProps = {
+  scale: string;
+  keyCenter: string;
+  tuning: string;
+};
 
+export function getURLFromProps(props: ScaleToolProps) {
+  return `/?scale=${props.scale}&keyCenter=${props.keyCenter}&tuning=${props.tuning}`;
+}
+
+function ScaleTool(props: ScaleToolProps) {
+  const selectedScale = allScales.find((s) => s.name === props.scale)!;
+  const keyCenter = allNotes.find((n) => n === props.keyCenter)!;
+  const selectedTuning = allTunings.find((t) => t.name === props.tuning)!;
   const key = selectedScale.key(keyCenter);
   const _keyNotes = keyNotes(key);
 
@@ -34,55 +47,57 @@ export function App() {
     <div>
       <h2>Tuning</h2>
       {allTunings.map((tuning, key) => (
-        <div
-          key={key}
-          style={{
-            display: "inline-block",
-            marginLeft: "5px",
-            borderRadius: "5px",
-            padding: "0 10px",
-            color: "white",
-            cursor: "pointer",
-            backgroundColor: tuning.name === selectedTuning.name ? selectedColor : unselectedColor,
-          }}
-          onClick={() => setSelectedTuning(tuning)}
-        >
-          {tuning.name}
-        </div>
+        <Link to={getURLFromProps({ ...props, tuning: tuning.name })} key={key}>
+          <div
+            style={{
+              display: "inline-block",
+              marginLeft: "5px",
+              borderRadius: "5px",
+              padding: "0 10px",
+              color: "white",
+              cursor: "pointer",
+              backgroundColor: tuning.name === selectedTuning.name ? selectedColor : unselectedColor,
+            }}
+          >
+            {tuning.name}
+          </div>
+        </Link>
       ))}
       <h2>Key</h2>
       {circleOfFifths.map((note, key) => (
-        <div
-          key={key}
-          className="fretboard-note"
-          style={{
-            display: "inline-block",
-            marginLeft: "5px",
-            cursor: "pointer",
-            backgroundColor: note === keyCenter ? selectedColor : unselectedColor,
-          }}
-          onClick={() => setKeyCenter(note)}
-        >
-          {note}
-        </div>
+        <Link to={getURLFromProps({ ...props, keyCenter: note })}>
+          <div
+            key={key}
+            className="fretboard-note"
+            style={{
+              display: "inline-block",
+              marginLeft: "5px",
+              cursor: "pointer",
+              backgroundColor: note === keyCenter ? selectedColor : unselectedColor,
+            }}
+          >
+            {note}
+          </div>
+        </Link>
       ))}
       <h2>Scale</h2>
       {allScales.map((scale, key) => (
-        <div
-          key={key}
-          style={{
-            display: "inline-block",
-            marginLeft: "5px",
-            borderRadius: "5px",
-            padding: "0 10px",
-            color: "white",
-            cursor: "pointer",
-            backgroundColor: scale.name === selectedScale.name ? selectedColor : unselectedColor,
-          }}
-          onClick={() => setSelectedScale(scale)}
-        >
-          {scale.name}
-        </div>
+        <Link to={getURLFromProps({ ...props, scale: scale.name })}>
+          <div
+            key={key}
+            style={{
+              display: "inline-block",
+              marginLeft: "5px",
+              borderRadius: "5px",
+              padding: "0 10px",
+              color: "white",
+              cursor: "pointer",
+              backgroundColor: scale.name === selectedScale.name ? selectedColor : unselectedColor,
+            }}
+          >
+            {scale.name}
+          </div>
+        </Link>
       ))}
       <h2>Fretboard</h2>
       <Fretboard
@@ -90,5 +105,23 @@ export function App() {
         styleNote={(n) => (n.inKey && n.note === keyCenter ? { backgroundColor: selectedColor } : {})}
       />
     </div>
+  );
+}
+
+export function Main() {
+  let query = useQuery();
+  const keyCenter = query.get("keyCenter");
+  const tuning = query.get("tuning");
+  const scale = query.get("scale");
+  return (
+    <ScaleTool keyCenter={keyCenter ?? "E"} scale={scale ?? majorScale.name} tuning={tuning ?? allTunings[0].name} />
+  );
+}
+
+export function App() {
+  return (
+    <BrowserRouter>
+      <Main />
+    </BrowserRouter>
   );
 }

@@ -1,4 +1,4 @@
-import { indexToNote, keyChroma, Note, noteIndex, NoteIndex } from "./note";
+import { indexToNote, isNaturalNote, keyChroma, Note, noteIndex, NoteIndex } from "./note";
 
 export type HeptatonicScaleFormula = [NoteIndex, NoteIndex, NoteIndex, NoteIndex, NoteIndex, NoteIndex, NoteIndex];
 export type ScaleDegree<Scale extends number[]> = keyof Scale;
@@ -8,10 +8,15 @@ export const majorScaleFormula: HeptatonicScaleFormula = [0, 2, 4, 5, 7, 9, 11];
 export const minorScaleFormula: HeptatonicScaleFormula = [0, 2, 3, 5, 7, 8, 10];
 export const harmonicMinorScaleFormula: HeptatonicScaleFormula = [0, 2, 3, 5, 7, 8, 11];
 
+export type ScaleFormula = {
+  degrees: number;
+  [x: number]: number;
+};
+
 export type Key = {
   name: string;
   keynote: Note;
-  scaleFormula: HeptatonicScaleFormula;
+  scaleFormula: ScaleFormula;
 };
 
 export interface Scale {
@@ -24,7 +29,7 @@ export const harmonicMinorScale: Scale = {
   key: (note) => ({
     name: `${note} Harmonic Minor Scale`,
     keynote: note,
-    scaleFormula: harmonicMinorScaleFormula,
+    scaleFormula: { degrees: 7, ...harmonicMinorScaleFormula },
   }),
 };
 
@@ -33,7 +38,7 @@ export const minorScale: Scale = {
   key: (note) => ({
     name: `${note} Minor Scale`,
     keynote: note,
-    scaleFormula: minorScaleFormula,
+    scaleFormula: { degrees: 7, ...minorScaleFormula },
   }),
 };
 
@@ -42,20 +47,34 @@ export const majorScale: Scale = {
   key: (note) => ({
     name: `${note} Major Scale`,
     keynote: note,
-    scaleFormula: majorScaleFormula,
+    scaleFormula: { degrees: 7, ...majorScaleFormula },
   }),
 };
 
-// export const chromaticScale: Scale = {
-//   name: "Chromatic",
-//   key: (note) => ({
-//     name: "Chromatic Scale",
-//     keynote: note,
-//     scaleFormula:
-//   })
-// }
+export const chromaticScale: Scale = {
+  name: "Chromatic",
+  key: (note) => ({
+    name: "Chromatic Scale",
+    keynote: note,
+    scaleFormula: {
+      degrees: 12,
+      0: 0,
+      1: 1,
+      2: 2,
+      3: 3,
+      4: 4,
+      5: 5,
+      6: 6,
+      7: 7,
+      8: 8,
+      9: 9,
+      10: 10,
+      11: 11,
+    },
+  }),
+};
 
-export const allScales = [majorScale, minorScale, harmonicMinorScale];
+export const allScales = [majorScale, minorScale, harmonicMinorScale, chromaticScale];
 
 export const circleOfFifths: Note[] = ["F", "C", "G", "D", "A", "E", "B", "Gb", "Db", "Ab", "Eb", "Bb"];
 
@@ -63,19 +82,25 @@ export function keyNotes(key: Key) {
   return getScale(key.keynote, key.scaleFormula);
 }
 
-export function getScale(keynote: Note, scale: HeptatonicScaleFormula) {
+export function getScale(keynote: Note, scale: ScaleFormula) {
   const tones: Note[] = [keynote];
   const startIndex = noteIndex(keynote);
-  for (const scaleDegree of scale.slice(1)) {
+  for (let i = 1; i < scale.degrees; ++i) {
+    const scaleDegree = scale[i];
     const tone = indexToNote(((startIndex + scaleDegree) % 12) as any);
     const candidates = tone.filter((x) => !tones.map((x) => keyChroma(x)).includes(keyChroma(x)));
     const finalCandidates =
       candidates.length === 1 ? candidates : candidates.sort((a, b) => noteIndex(a) - noteIndex(b));
     if (finalCandidates.length == 0) {
-      tones.push(tone[0]);
+      tones.push(chooseNatural(tone));
     } else {
       tones.push(finalCandidates[0]);
     }
   }
   return tones;
+}
+
+export function chooseNatural(notes: Note[]): Note {
+  const filtered = notes.filter((x) => isNaturalNote(x));
+  return filtered.length === 0 ? notes[0] : filtered[0];
 }

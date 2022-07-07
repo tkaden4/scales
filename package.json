@@ -5,12 +5,15 @@
   "author": "Kaden Thomas <thomas.kaden4@outlook.com>",
   "license": "MIT",
   "scripts": {
-    "build": "parcel build web/index.html --dist-dir docs --public-url https://tkaden4.github.io/scales/ --no-source-maps"
+    "build": "parcel build web/index.html --dist-dir docs --public-url https://tkaden4.github.io/scales/ --no-source-maps",
+    "dev": "parcel web/index.html"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.182",
     "@types/react": "^18.0.15",
     "@types/react-dom": "^18.0.6",
+    "@types/react-router": "^5.1.18",
+    "@types/react-router-dom": "^5.3.3",
     "parcel": "^2.6.2",
     "parcel-transformer-ts-css-modules": "^1.0.14",
     "process": "^0.11.10",
@@ -20,7 +23,9 @@
     "csstype": "^3.1.0",
     "lodash": "^4.17.21",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-router": "^6.3.0",
+    "react-router-dom": "^6.3.0"
   },
   "@parcel/transformer-css": {
     "cssModules": true

@@ -6,7 +6,7 @@ export type FlatNote = `${NaturalNote}b`;
 export type Note = NaturalNote | SharpNote | FlatNote;
 export type Accidental = SharpNote | FlatNote;
 
-export const allNotes = _.range(0, 11)
+export const allNotes = _.range(0, 12)
   .map((idx) => indexToNote(idx as any))
   .flat();
 
@@ -68,6 +68,8 @@ export function noteIndex(note: NaturalNote | SharpNote | FlatNote) {
     case "G#":
     case "Ab":
       return 11;
+    default:
+      throw new Error("Unknown tone " + note);
   }
 }
 
@@ -99,6 +101,8 @@ export function indexToNote(index: NoteIndex): Note[] {
       return ["G"];
     case 11:
       return ["G#", "Ab"];
+    default:
+      throw new Error("Unknown note index " + index);
   }
 }
 
