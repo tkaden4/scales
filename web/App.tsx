@@ -24,7 +24,7 @@ type ScaleToolProps = {
 };
 
 export function getURLFromProps(props: ScaleToolProps) {
-  return `/scales/?scale=${props.scale}&keyCenter=${props.keyCenter}&tuning=${props.tuning}`;
+  return `?scale=${props.scale}&keyCenter=${props.keyCenter}&tuning=${props.tuning}`;
 }
 
 function ScaleTool(props: ScaleToolProps) {
