@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Link, useLocation } from "react-router-dom";
+import { HashRouter, Link, useLocation } from "react-router-dom";
 import { allNotes } from "../src/note";
 import { allScales, circleOfFifths, keyNotes, majorScale } from "../src/scale";
 import { getFrets } from "../src/strings";
@@ -120,8 +120,8 @@ export function Main() {
 
 export function App() {
   return (
-    <BrowserRouter>
+    <HashRouter basename="/">
       <Main />
-    </BrowserRouter>
+    </HashRouter>
   );
 }
