@@ -1,8 +1,8 @@
-import { Note, WholeNote } from "./note";
+import { NaturalNote, Note } from "./note";
 
 export type Tone = `${Note}${number}`;
 
-export function toneChroma(tone: Tone): WholeNote {
+export function toneChroma(tone: Tone): NaturalNote {
   return tone[0] as any;
 }
 

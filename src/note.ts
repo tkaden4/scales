@@ -1,22 +1,39 @@
-export type WholeNote = "A" | "B" | "C" | "D" | "E" | "F" | "G";
-export type SharpNote = `${WholeNote}#`;
-export type FlatNote = `${WholeNote}b`;
-export type Note = WholeNote | SharpNote | FlatNote;
+import _ from "lodash";
+
+export type NaturalNote = "A" | "B" | "C" | "D" | "E" | "F" | "G";
+export type SharpNote = `${NaturalNote}#`;
+export type FlatNote = `${NaturalNote}b`;
+export type Note = NaturalNote | SharpNote | FlatNote;
 export type Accidental = SharpNote | FlatNote;
+
+export const allNotes = _.range(0, 11)
+  .map((idx) => indexToNote(idx as any))
+  .flat();
+
+export const accidentals = allNotes.filter((note) => isAccidental(note));
+
+export const naturalNote = allNotes.filter((note) => !isAccidental(note));
+
+export function isNote(s: string): s is Note {
+  if (s.length > 2) {
+    return false;
+  }
+  return allNotes.map((x) => x as string).includes(s);
+}
 
 export function isAccidental(note: Note): note is Accidental {
   return note.length === 2;
 }
 
-export function keyChroma(note: Note): WholeNote {
-  if (isAccidental(note)) {
-    return note[0] as any as WholeNote;
-  } else {
-    return note;
-  }
+export function isNaturalNote(note: Note): note is NaturalNote {
+  return !isAccidental(note);
 }
 
-export function noteIndex(note: WholeNote | SharpNote | FlatNote) {
+export function keyChroma(note: Note): NaturalNote {
+  return note[0] as any;
+}
+
+export function noteIndex(note: NaturalNote | SharpNote | FlatNote) {
   switch (note) {
     case "A":
       return 0;
@@ -84,3 +101,19 @@ export function indexToNote(index: NoteIndex): Note[] {
       return ["G#", "Ab"];
   }
 }
+
+export function offset(note: Note, semitones: number): NoteIndex {
+  return ((noteIndex(note) + semitones) % 12) as NoteIndex;
+}
+
+// export class RichNote {
+//   private constructor(private index: NoteIndex) {}
+
+//   static fromIndex(index: NoteIndex) {
+//     return new RichNote(index);
+//   }
+
+//   static fromNote(note: Note) {
+//     return RichNote.fromIndex(noteIndex(note));
+//   }
+// }

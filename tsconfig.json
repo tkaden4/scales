@@ -11,7 +11,9 @@
     "module": "CommonJS",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "outDir": "build"
+    "outDir": "build",
+    "jsx": "react"
   },
-  "include": ["src"]
+  "files": ["./types.d.ts"],
+  "include": ["src", "web"]
 }
