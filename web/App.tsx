@@ -24,7 +24,7 @@ type ScaleToolProps = {
 };
 
 export function getURLFromProps(props: ScaleToolProps) {
-  return `/?scale=${props.scale}&keyCenter=${props.keyCenter}&tuning=${props.tuning}`;
+  return `/scales/?scale=${props.scale}&keyCenter=${props.keyCenter}&tuning=${props.tuning}`;
 }
 
 function ScaleTool(props: ScaleToolProps) {
@@ -120,7 +120,7 @@ export function Main() {
 
 export function App() {
   return (
-    <HashRouter basename="/scales/">
+    <HashRouter basename="/">
       <Main />
     </HashRouter>
   );
