@@ -120,7 +120,7 @@ export function Main() {
 
 export function App() {
   return (
-    <HashRouter basename="/">
+    <HashRouter basename="/scales/">
       <Main />
     </HashRouter>
   );
