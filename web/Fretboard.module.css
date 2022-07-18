@@ -2,29 +2,14 @@
   display: inline-grid;
   column-gap: 0px;
   row-gap: 0px;
-  background-color: #f2f2f0;
   align-items: center;
   justify-items: center;
 }
 
-.fretboard-string {
+.fretboard-labels {
   width: 100%;
   height: 100%;
   justify-items: center;
-  border-right: 4px solid #00000055;
-  background: linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 0) calc(50% - 1px),
-    rgba(192, 192, 192, 1) calc(50%),
-    rgba(0, 0, 0, 0) calc(50% + 1px)
-  );
-}
-
-.fretboard-cell {
-  display: flex;
-  height: 100%;
-  justify-content: center;
-  align-items: center;
 }
 
 .fretboard-note {

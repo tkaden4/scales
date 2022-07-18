@@ -1,13 +1,13 @@
 import React from "react";
 import { HashRouter, Link, useLocation } from "react-router-dom";
 import { allNotes } from "../src/note";
-import { allScales, circleOfFifths, keyNotes, majorScale } from "../src/scale";
-import { getFrets } from "../src/strings";
+import { allScales, circleOfFifths, majorScale } from "../src/scale";
 import { allTunings } from "../src/tunings";
-import { Fret, Fretboard } from "./Fretboard";
+import { Guitar } from "./Guitar";
 
 const selectedColor = "#fe2040c0";
 const unselectedColor = "#20b2aad0";
+const mutedColor = "#bababaa0";
 
 // A custom hook that builds on useLocation to parse
 // the query string for you.
@@ -31,17 +31,11 @@ function ScaleTool(props: ScaleToolProps) {
   const selectedScale = allScales.find((s) => s.name === props.scale)!;
   const keyCenter = allNotes.find((n) => n === props.keyCenter)!;
   const selectedTuning = allTunings.find((t) => t.name === props.tuning)!;
-  const key = selectedScale.key(keyCenter);
-  const _keyNotes = keyNotes(key);
-
-  const frets = getFrets(selectedTuning.notes, 12)
-    .map((gstring) =>
-      gstring.map((fret) => {
-        const notes = fret.filter((n) => _keyNotes.includes(n));
-        return notes.length > 0 ? ({ note: notes[0], inKey: true } as Fret) : ({ notes: fret, inKey: false } as Fret);
-      })
-    )
-    .reverse();
+  const tonality = {
+    keyCenter: keyCenter,
+    scale: selectedScale,
+    tuning: selectedTuning,
+  };
 
   return (
     <div>
@@ -65,7 +59,7 @@ function ScaleTool(props: ScaleToolProps) {
       ))}
       <h2>Key</h2>
       {circleOfFifths.map((note, key) => (
-        <Link to={getURLFromProps({ ...props, keyCenter: note })}>
+        <Link to={getURLFromProps({ ...props, keyCenter: note })} key={key}>
           <div
             key={key}
             className="fretboard-note"
@@ -82,7 +76,7 @@ function ScaleTool(props: ScaleToolProps) {
       ))}
       <h2>Scale</h2>
       {allScales.map((scale, key) => (
-        <Link to={getURLFromProps({ ...props, scale: scale.name })}>
+        <Link to={getURLFromProps({ ...props, scale: scale.name })} key={key}>
           <div
             key={key}
             style={{
@@ -100,10 +94,7 @@ function ScaleTool(props: ScaleToolProps) {
         </Link>
       ))}
       <h2>Fretboard</h2>
-      <Fretboard
-        strings={frets}
-        styleNote={(n) => (n.inKey && n.note === keyCenter ? { backgroundColor: selectedColor } : {})}
-      />
+      <Guitar tonality={tonality} />
     </div>
   );
 }

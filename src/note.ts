@@ -94,7 +94,7 @@ export function indexToNote(index: NoteIndex): Note[] {
     case 7:
       return ["E", "Fb"];
     case 8:
-      return ["E#", "F"];
+      return ["F", "E#"];
     case 9:
       return ["F#", "Gb"];
     case 10:

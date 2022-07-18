@@ -1,3 +1,9 @@
-import { parseTuning } from "./tunings";
+import { Note } from "./note";
+import { Scale } from "./scale";
+import { Tuning } from "./tunings";
 
-const tuning = parseTuning("EADGBE");
+export type Tonality = {
+  keyCenter: Note;
+  scale: Scale;
+  tuning: Tuning;
+};
