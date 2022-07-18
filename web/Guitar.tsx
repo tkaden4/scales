@@ -2,7 +2,7 @@ import React from "react";
 import { Tonality } from "../src";
 import { indexToNote, offset } from "../src/note";
 import { keyNotes } from "../src/scale";
-import { defaultFretColor, Fretboard, Note } from "./Fretboard";
+import { defaultFretColor, Fretboard, FretboardProps, NORMAL_LABELED_FRET_OFFSETS, Note } from "./Fretboard";
 import { Position } from "./Position";
 
 export const defaultSelectedColor = "#ff5070";
@@ -20,15 +20,12 @@ export type GuitarProps = {
   stringColor?: string;
   outOfKeyColor?: string;
   nutColor?: string;
-};
-
-export const NORMAL_LABELED_FRET_OFFSETS = [0, 3, 5, 7, 9];
+} & Partial<FretboardProps>;
 
 export function defaultGetGuitarLabel(fret: number) {
   return fret > 0 && NORMAL_LABELED_FRET_OFFSETS.includes(fret % 12) ? (
     <div
       style={{
-        color: "#00000055",
         width: "100%",
         height: "100%",
         display: "inline-flex",
@@ -96,6 +93,7 @@ export function Guitar({
   nutColor = defaultNutColor,
   fretColor = defaultFretColor,
   frets = 12,
+  ...props
 }: GuitarProps) {
   return (
     <Fretboard
@@ -107,6 +105,7 @@ export function Guitar({
         defaultGetGuitarFret(tonality, nutColor, selectedColor, outOfKeyColor, unselectedColor, s, f, w, wb)
       }
       getLabel={defaultGetGuitarLabel}
+      {...props}
     />
   );
 }

@@ -1,10 +1,29 @@
 import _ from "lodash";
 import React, { ReactElement } from "react";
-import { Note } from "../src/note";
+import { allNotes, Note, noteIndex } from "../src/note";
 import "./Fretboard.module.css";
 import { defaultStringColor } from "./Guitar";
 
 export const defaultFretColor = "#bbbbbb";
+
+export const NORMAL_LABELED_FRET_OFFSETS = [0, 3, 5, 7, 9];
+export const ALL_OFFSETS = allNotes.flatMap((x) => noteIndex(x));
+
+export const numericLabel =
+  (offsets = NORMAL_LABELED_FRET_OFFSETS) =>
+  (fret: number) => {
+    return (
+      <div
+        style={{
+          textAlign: "center",
+          fontWeight: "bold",
+          fontSize: "20px",
+        }}
+      >
+        {fret > 0 && offsets.includes(fret % 12) ? fret : ""}
+      </div>
+    );
+  };
 
 export type FretboardProps = {
   strings: number;
@@ -45,6 +64,7 @@ export function Fretboard(props: FretboardProps) {
     <div
       className="fretboard"
       style={{
+        color: "#999999",
         gridTemplateRows: `repeat(${props.strings + 1}, 60px)`,
         gridTemplateColumns: `repeat(${props.frets + 1}, 141px)`,
       }}
