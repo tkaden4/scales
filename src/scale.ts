@@ -92,8 +92,6 @@ export const chromaticScale: Scale = {
 
 export const allScales = [majorScale, minorScale, harmonicMinorScale, doubleHarmonicMinorScale, chromaticScale];
 
-export const circleOfFifths: Note[] = ["F", "C", "G", "D", "A", "E", "B", "Gb", "Db", "Ab", "Eb", "Bb"];
-
 export function keyNotes(key: Key) {
   return getScale(key.keynote, key.scaleFormula);
 }

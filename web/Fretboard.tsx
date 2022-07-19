@@ -14,9 +14,9 @@ export const ALL_OFFSETS = allNotes.flatMap((x) => noteIndex(x));
 export const noLabel = (fret: number) => {};
 
 export const numericLabel =
-  (offsets = NORMAL_LABELED_FRET_OFFSETS) =>
-  (fret: number) => {
-    return (
+  (both = false, offsets = NORMAL_LABELED_FRET_OFFSETS): LabelProvider =>
+  (fret: number, lower) => {
+    return both || !lower ? (
       <div
         style={{
           display: "inline-flex",
@@ -30,7 +30,7 @@ export const numericLabel =
       >
         {fret > 0 && offsets.includes(fret % 12) ? fret : ""}
       </div>
-    );
+    ) : undefined;
   };
 
 export type FretProvider = (string: number, fret: number, withString?: any, withBorder?: any) => ReactElement;
@@ -78,15 +78,15 @@ export function Fretboard(props: FretboardProps) {
       className="fretboard"
       style={{
         color: "#999999",
-        gridTemplateRows: `repeat(${props.strings + (props.labels ?? true ? 2 : 0)}, 60px)`,
+        gridTemplateRows: `repeat(${props.strings + (props.labels ?? true ? 2 : 1)}, 60px)`,
         gridTemplateColumns: `repeat(${props.frets + 1}, 141px)`,
       }}
     >
       {(props.labels ?? true) &&
         _.range(0, props.frets + 1).map((fret, fretKey) => {
           return (
-            <div className="fretboard-labels" key={fretKey}>
-              {props.getLabel(fret, true) ?? <></>}
+            <div className="fretboard-labels" key={`upper-${fret}`}>
+              {props.getLabel(fret, false) ?? <></>}
             </div>
           );
         })}
@@ -121,8 +121,8 @@ export function Fretboard(props: FretboardProps) {
       {(props.labels ?? true) &&
         _.range(0, props.frets + 1).map((fret, fretKey) => {
           return (
-            <div className="fretboard-labels" key={fretKey}>
-              {props.getLabel(fret, false) ?? <></>}
+            <div className="fretboard-labels" key={`lower-${fret}`}>
+              {props.getLabel(fret, true) ?? <></>}
             </div>
           );
         })}

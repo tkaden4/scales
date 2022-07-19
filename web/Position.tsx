@@ -9,8 +9,8 @@ export type PositionProps = {
 
 export function Position(props: PositionProps) {
   const getLabel = React.useCallback(
-    (fret: number) => {
-      return props.getLabel(fret + props.startingFret);
+    (fret: number, lower: boolean) => {
+      return props.getLabel(fret + props.startingFret, lower);
     },
     [props.getLabel]
   );

@@ -1,10 +1,9 @@
 import React from "react";
 import { HashRouter, Link, useLocation } from "react-router-dom";
-import { allNotes } from "../src/note";
-import { allScales, circleOfFifths, majorScale } from "../src/scale";
+import { accidentals, allNotes, naturalNotes } from "../src/note";
+import { allScales, majorScale } from "../src/scale";
 import { allTunings, parseTuning, toTonalTuning } from "../src/tunings";
-import { noLabel } from "./Fretboard";
-import { Guitar, GuitarPosition } from "./Guitar";
+import { Guitar } from "./Guitar";
 
 const selectedColor = "#fe2040c0";
 const unselectedColor = "#20b2aad0";
@@ -25,7 +24,7 @@ type ScaleToolProps = {
 };
 
 export function getURLFromProps(props: ScaleToolProps) {
-  return `?scale=${props.scale}&keyCenter=${props.keyCenter}&tuning=${props.tuning}`;
+  return `?scale=${props.scale}&keyCenter=${encodeURIComponent(props.keyCenter)}&tuning=${props.tuning}`;
 }
 
 function ScaleTool(props: ScaleToolProps) {
@@ -67,7 +66,7 @@ function ScaleTool(props: ScaleToolProps) {
         </Link>
       ))}
       <h2>Key</h2>
-      {circleOfFifths.map((note, key) => (
+      {[...naturalNotes, ...accidentals].map((note, key) => (
         <Link to={getURLFromProps({ ...props, keyCenter: note })} key={key}>
           <div
             key={key}
@@ -105,8 +104,8 @@ function ScaleTool(props: ScaleToolProps) {
       <h2>Fretboard</h2>
       <Guitar tonality={tonality} />
       {/* <GuitarPosition tonality={tonality} startingFret={12} /> */}
-      <h2>Shapes</h2>
-      <GuitarPosition tonality={tonality} labels={false} startingFret={8} frets={4} getLabel={noLabel} />
+      {/* <h2>Shapes</h2>
+      <GuitarPosition tonality={tonality} labels startingFret={8} frets={4} getLabel={numericLabel(false)} /> */}
     </div>
   );
 }

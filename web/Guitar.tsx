@@ -152,7 +152,7 @@ export function Guitar({
           showOctaves
         )
       }
-      getLabel={defaultGetGuitarLabel}
+      getLabel={props.getLabel ?? defaultGetGuitarLabel}
       {...props}
     />
   );
@@ -193,9 +193,8 @@ export function GuitarPosition(props: GuitarPositionProps) {
           showOctaves
         )
       }
-      getLabel={props.getLabel ?? defaultGetGuitarLabel}
+      getLabel={extra.getLabel ?? defaultGetGuitarLabel}
       frets={frets}
-      {...extra}
       startingFret={props.startingFret}
       tonality={tonality}
       fretColor={fretColor}

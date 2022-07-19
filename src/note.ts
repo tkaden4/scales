@@ -8,11 +8,12 @@ export type Accidental = SharpNote | FlatNote;
 
 export const allNotes = _.range(0, 12)
   .map((idx) => indexToNote(idx as any))
-  .flat();
+  .flat()
+  .sort((a, b) => noteIndex(a) - noteIndex(b));
 
 export const accidentals = allNotes.filter((note) => isAccidental(note));
 
-export const naturalNote = allNotes.filter((note) => !isAccidental(note));
+export const naturalNotes = allNotes.filter((note) => !isAccidental(note));
 
 export function isNote(s: string): s is Note {
   if (s.length > 2) {
