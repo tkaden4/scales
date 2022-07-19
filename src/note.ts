@@ -35,38 +35,38 @@ export function keyChroma(note: Note): NaturalNote {
 
 export function noteIndex(note: NaturalNote | SharpNote | FlatNote) {
   switch (note) {
-    case "A":
-      return 0;
-    case "A#":
-    case "Bb":
-      return 1;
-    case "B":
-    case "Cb":
-      return 2;
     case "B#":
     case "C":
-      return 3;
+      return 0;
     case "C#":
     case "Db":
-      return 4;
+      return 1;
     case "D":
-      return 5;
+      return 2;
     case "D#":
     case "Eb":
-      return 6;
+      return 3;
     case "E":
     case "Fb":
-      return 7;
+      return 4;
     case "E#":
     case "F":
-      return 8;
+      return 5;
     case "F#":
     case "Gb":
-      return 9;
+      return 6;
     case "G":
-      return 10;
+      return 7;
     case "G#":
     case "Ab":
+      return 8;
+    case "A":
+      return 9;
+    case "A#":
+    case "Bb":
+      return 10;
+    case "B":
+    case "Cb":
       return 11;
     default:
       throw new Error("Unknown tone " + note);
@@ -78,29 +78,29 @@ export type NoteIndex = ReturnType<typeof noteIndex>;
 export function indexToNote(index: NoteIndex): Note[] {
   switch (index) {
     case 0:
-      return ["A"];
-    case 1:
-      return ["A#", "Bb"];
-    case 2:
-      return ["B", "Cb"];
-    case 3:
       return ["C", "B#"];
-    case 4:
+    case 1:
       return ["C#", "Db"];
-    case 5:
+    case 2:
       return ["D"];
-    case 6:
+    case 3:
       return ["D#", "Eb"];
-    case 7:
+    case 4:
       return ["E", "Fb"];
-    case 8:
+    case 5:
       return ["F", "E#"];
-    case 9:
+    case 6:
       return ["F#", "Gb"];
-    case 10:
+    case 7:
       return ["G"];
-    case 11:
+    case 8:
       return ["G#", "Ab"];
+    case 9:
+      return ["A"];
+    case 10:
+      return ["A#", "Bb"];
+    case 11:
+      return ["B", "Cb"];
     default:
       throw new Error("Unknown note index " + index);
   }
@@ -108,6 +108,20 @@ export function indexToNote(index: NoteIndex): Note[] {
 
 export function offset(note: Note, semitones: number): NoteIndex {
   return ((noteIndex(note) + semitones) % 12) as NoteIndex;
+}
+
+export function invert(noteIndex: NoteIndex): NoteIndex {
+  return (11 - noteIndex) as NoteIndex;
+}
+
+export function* foreverNotes(startingPosition: Note) {
+  for (let i: NoteIndex = noteIndex(startingPosition); ; i = offset(indexToNote(i)[0], 1)) {
+    yield indexToNote(i);
+  }
+}
+
+export function noteDistance(lower: Note, upper: Note) {
+  return ((noteIndex(upper) - noteIndex(lower) + 12) % 12) as NoteIndex;
 }
 
 // export class RichNote {
@@ -121,3 +135,9 @@ export function offset(note: Note, semitones: number): NoteIndex {
 //     return RichNote.fromIndex(noteIndex(note));
 //   }
 // }
+
+export const noteOps = {
+  offset(note: Note, semitones: number) {
+    return offset(note, semitones);
+  },
+};

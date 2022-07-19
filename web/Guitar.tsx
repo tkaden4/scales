@@ -1,28 +1,46 @@
 import React from "react";
 import { Tonality } from "../src";
-import { indexToNote, offset } from "../src/note";
+import { Note } from "../src/note";
 import { keyNotes } from "../src/scale";
-import { defaultFretColor, Fretboard, FretboardProps, NORMAL_LABELED_FRET_OFFSETS, Note } from "./Fretboard";
+import * as tone from "../src/tone";
+import { toneNote, toneOps } from "../src/tone";
+import { coerceColor, ColorLike, colorValue } from "../src/util";
+import { defaultFretColor, Fretboard, FretboardProps, NORMAL_LABELED_FRET_OFFSETS, Tone } from "./Fretboard";
 import { Position } from "./Position";
 
-export const defaultSelectedColor = "#ff5070";
-export const defaultUnselectedColor = "#30c2ba";
-export const defaultMutedColor = "#dadada";
-export const defaultStringColor = "#b0b0b0";
-export const defaultNutColor = "#505060";
+export const defaultSelectedColor: ColorLike = "#ff5070";
+export const defaultUnselectedColor: ColorLike = "#30c2ba";
+export const defaultMutedColor: ColorLike = "#dadada";
+export const defaultStringColor: ColorLike = "#b0b0b0";
+export const defaultNutColor: ColorLike = "#505060";
+
+export const octaveColors = [
+  "brown",
+  "blue",
+  "mediumslateblue",
+  "dodgerblue",
+  "orangered",
+  "crimson",
+  "forestgreen",
+].map((color) => coerceColor(color).lightness(65));
+
+export function octaveColor(tone: tone.Tone, keyCenter: Note) {
+  return coerceColor(octaveColors[toneOps.octaveOffset(tone, keyCenter) % octaveColors.length]);
+}
 
 export type GuitarProps = {
   tonality: Tonality;
   frets?: number;
-  fretColor?: string;
-  selectedColor?: string;
-  unselectedColor?: string;
-  stringColor?: string;
-  outOfKeyColor?: string;
-  nutColor?: string;
+  fretColor?: ColorLike;
+  selectedColor?: ColorLike;
+  unselectedColor?: ColorLike;
+  stringColor?: ColorLike;
+  outOfKeyColor?: ColorLike;
+  nutColor?: ColorLike;
+  showOctaves?: boolean;
 } & Partial<FretboardProps>;
 
-export function defaultGetGuitarLabel(fret: number) {
+export function defaultGetGuitarLabel(fret: number, upper: boolean) {
   return fret > 0 && NORMAL_LABELED_FRET_OFFSETS.includes(fret % 12) ? (
     <div
       style={{
@@ -30,7 +48,7 @@ export function defaultGetGuitarLabel(fret: number) {
         height: "100%",
         display: "inline-flex",
         justifyContent: "center",
-        alignItems: "flex-end",
+        alignItems: upper ? "flex-end" : "flex-start",
       }}
     >
       {"⬤"
@@ -45,20 +63,22 @@ export function defaultGetGuitarLabel(fret: number) {
 
 export function defaultGetGuitarFret(
   tonality: Tonality,
-  nutColor: string,
-  selectedColor: string,
-  outOfKeyColor: string,
-  unselectedColor: string,
+  nutColor: ColorLike,
+  selectedColor: ColorLike,
+  outOfKeyColor: ColorLike,
+  unselectedColor: ColorLike,
   string: number,
   fret: number,
   withString: any,
-  withBorder: any
+  withBorder: any,
+  showOctaves: boolean
 ) {
   const key = tonality.scale.key(tonality.keyCenter);
   const _keyNotes = keyNotes(key);
-  const startingNote = tonality.tuning.notes.slice().reverse()[string];
-  const notes = indexToNote(offset(startingNote, fret));
-  const filtered = notes.filter((x) => _keyNotes.includes(x));
+  const startingNote = tonality.tuning.tones.slice().reverse()[string];
+  const notes = toneOps.offset(startingNote, fret);
+  const filtered = notes.filter((tone) => _keyNotes.includes(toneNote(tone)));
+
   return (
     <div
       style={{
@@ -68,15 +88,31 @@ export function defaultGetGuitarFret(
         textAlign: "center",
         justifyContent: "center",
         alignItems: "center",
+        boxSizing: fret > 0 && "border-box",
         ...withBorder,
-        ...(fret === 0 ? { borderRight: `10px solid ${nutColor}` } : withString),
+        ...(fret === 0 ? { borderRight: `10px solid ${nutColor}` } : withString(undefined)),
       }}
     >
-      {(filtered.length !== 1 ? notes : filtered).map((note) => (
-        <Note
-          note={note}
+      {(filtered.length !== 1 ? notes : filtered).map((tone, key) => (
+        <Tone
+          key={key}
+          tone={tone}
+          includeOctave={false}
+          border={
+            toneNote(tone) === tonality.keyCenter && showOctaves
+              ? `4px solid ${colorValue(octaveColor(tone, tonality.keyCenter).rotate(-10).lighten(0.25))}`
+              : ""
+          }
           color={
-            note === tonality.keyCenter ? selectedColor : !_keyNotes.includes(note) ? outOfKeyColor : unselectedColor
+            toneNote(tone) === tonality.keyCenter
+              ? showOctaves
+                ? octaveColor(tone, tonality.keyCenter)
+                : selectedColor
+              : !_keyNotes.includes(toneNote(tone))
+              ? outOfKeyColor
+              : showOctaves
+              ? octaveColor(tone, tonality.keyCenter)
+              : unselectedColor
           }
         />
       ))}
@@ -93,16 +129,28 @@ export function Guitar({
   nutColor = defaultNutColor,
   fretColor = defaultFretColor,
   frets = 12,
+  showOctaves = false,
   ...props
 }: GuitarProps) {
   return (
     <Fretboard
       fretColor={fretColor}
       stringColor={stringColor}
-      strings={tonality.tuning.notes.length}
+      strings={tonality.tuning.tones.length}
       frets={frets}
       getFret={(s, f, w, wb) =>
-        defaultGetGuitarFret(tonality, nutColor, selectedColor, outOfKeyColor, unselectedColor, s, f, w, wb)
+        defaultGetGuitarFret(
+          tonality,
+          nutColor,
+          selectedColor,
+          outOfKeyColor,
+          unselectedColor,
+          s,
+          f,
+          w,
+          wb,
+          showOctaves
+        )
       }
       getLabel={defaultGetGuitarLabel}
       {...props}
@@ -125,15 +173,29 @@ export function GuitarPosition(props: GuitarPositionProps) {
     outOfKeyColor = defaultMutedColor,
     nutColor = defaultNutColor,
     frets = 12,
+    showOctaves = false,
+    ...extra
   } = props;
   return (
     <Position
-      strings={props.tonality.tuning.notes.length}
+      strings={props.tonality.tuning.tones.length}
       getFret={(s, f, w, wb) =>
-        defaultGetGuitarFret(tonality, nutColor, selectedColor, outOfKeyColor, unselectedColor, s, f, w, wb)
+        defaultGetGuitarFret(
+          tonality,
+          nutColor,
+          selectedColor,
+          outOfKeyColor,
+          unselectedColor,
+          s,
+          f,
+          w,
+          wb,
+          showOctaves
+        )
       }
-      getLabel={defaultGetGuitarLabel}
+      getLabel={props.getLabel ?? defaultGetGuitarLabel}
       frets={frets}
+      {...extra}
       startingFret={props.startingFret}
       tonality={tonality}
       fretColor={fretColor}

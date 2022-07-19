@@ -1,9 +1,17 @@
-import { NaturalNote, Note } from "./note";
+import { indexToNote, NaturalNote, Note, noteIndex, noteOps } from "./note";
 
 export type Tone = `${Note}${number}`;
 
+export function tone(note: Note, octave: number): Tone {
+  return `${note}${octave}`;
+}
+
 export function toneChroma(tone: Tone): NaturalNote {
   return tone[0] as any;
+}
+
+export function toneOctave(tone: Tone) {
+  return +tone.substring(toneNote(tone).length);
 }
 
 export function toneNote(tone: Tone): Note {
@@ -13,5 +21,20 @@ export function toneNote(tone: Tone): Note {
     return tone[0] as any;
   }
 }
+export function toneValue(tone: Tone) {
+  return 12 * toneOctave(tone) + noteIndex(toneNote(tone));
+}
 
-export const middleC: Tone = "C4";
+export const toneOps = {
+  offset(a: Tone, semitones: number): Tone[] {
+    const octave = toneOctave(a);
+    const chromaDiff = (semitones + 12) % 12;
+    const octaveDiff = Math.trunc((semitones + noteIndex(toneNote(a))) / 12);
+    const chroma = noteOps.offset(toneNote(a), chromaDiff);
+    return indexToNote(chroma).map((n) => tone(n, octave + octaveDiff));
+  },
+  octaveOffset(a: Tone, tonic: Note): number {
+    const t = this.offset(a, 12 - noteIndex(tonic))[0];
+    return toneOctave(t);
+  },
+};

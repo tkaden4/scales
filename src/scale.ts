@@ -33,6 +33,22 @@ export const harmonicMinorScale: Scale = {
   }),
 };
 
+export const doubleHarmonicMinorScale: Scale = {
+  name: "Double Harmonic",
+  key(note: Note) {
+    return {
+      name: `${note} Double Harmonic Scale`,
+      keynote: note,
+      scaleFormula: {
+        degrees: 7,
+        ...harmonicMinorScaleFormula,
+        1: harmonicMinorScaleFormula[1] - 1,
+        2: harmonicMinorScaleFormula[2] + 1,
+      },
+    };
+  },
+};
+
 export const minorScale: Scale = {
   name: "Minor",
   key: (note) => ({
@@ -74,7 +90,7 @@ export const chromaticScale: Scale = {
   }),
 };
 
-export const allScales = [majorScale, minorScale, harmonicMinorScale, chromaticScale];
+export const allScales = [majorScale, minorScale, harmonicMinorScale, doubleHarmonicMinorScale, chromaticScale];
 
 export const circleOfFifths: Note[] = ["F", "C", "G", "D", "A", "E", "B", "Gb", "Db", "Ab", "Eb", "Bb"];
 
