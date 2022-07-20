@@ -37,4 +37,7 @@ export const toneOps = {
     const t = this.offset(a, 12 - noteIndex(tonic))[0];
     return toneOctave(t);
   },
+  interval(a: Tone, b: Tone): number {
+    return toneValue(b) - toneValue(a);
+  },
 };

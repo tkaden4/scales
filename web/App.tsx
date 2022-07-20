@@ -1,9 +1,12 @@
 import React from "react";
 import { HashRouter, Link, useLocation } from "react-router-dom";
+import { Tonality } from "../src";
 import { accidentals, allNotes, naturalNotes } from "../src/note";
+import { getPosition, positionGetFret, positionLength } from "../src/positions";
 import { allScales, majorScale } from "../src/scale";
 import { allTunings, parseTuning, toTonalTuning } from "../src/tunings";
-import { Guitar } from "./Guitar";
+import { numericLabel } from "./Fretboard";
+import { defaultGuitarNoteProvider, Guitar, GuitarPosition } from "./Guitar";
 
 const selectedColor = "#fe2040c0";
 const unselectedColor = "#20b2aad0";
@@ -23,13 +26,17 @@ type ScaleToolProps = {
   tuning: string;
 };
 
+const positions = [1, 3, 4, 7];
+
 export function getURLFromProps(props: ScaleToolProps) {
-  return `?scale=${props.scale}&keyCenter=${encodeURIComponent(props.keyCenter)}&tuning=${props.tuning}`;
+  return `?scale=${encodeURIComponent(props.scale)}&keyCenter=${encodeURIComponent(
+    props.keyCenter
+  )}&tuning=${encodeURIComponent(props.tuning)}`;
 }
 
 function ScaleTool(props: ScaleToolProps) {
-  const selectedScale = allScales.find((s) => s.name === props.scale)!;
-  const keyCenter = allNotes.find((n) => n === props.keyCenter)!;
+  const selectedScale = allScales.find((s) => s.name === props.scale) ?? majorScale;
+  const keyCenter = allNotes.find((n) => n === props.keyCenter) ?? "E";
   const selectedTuning =
     allTunings.find((t) => t.name === props.tuning) ??
     toTonalTuning(
@@ -39,7 +46,7 @@ function ScaleTool(props: ScaleToolProps) {
       },
       2
     );
-  const tonality = {
+  const tonality: Tonality = {
     keyCenter: keyCenter,
     scale: selectedScale,
     tuning: selectedTuning,
@@ -69,7 +76,6 @@ function ScaleTool(props: ScaleToolProps) {
       {[...naturalNotes, ...accidentals].map((note, key) => (
         <Link to={getURLFromProps({ ...props, keyCenter: note })} key={key}>
           <div
-            key={key}
             className="fretboard-note"
             style={{
               display: "inline-block",
@@ -86,7 +92,6 @@ function ScaleTool(props: ScaleToolProps) {
       {allScales.map((scale, key) => (
         <Link to={getURLFromProps({ ...props, scale: scale.name })} key={key}>
           <div
-            key={key}
             style={{
               display: "inline-block",
               marginLeft: "5px",
@@ -103,9 +108,25 @@ function ScaleTool(props: ScaleToolProps) {
       ))}
       <h2>Fretboard</h2>
       <Guitar tonality={tonality} />
-      {/* <GuitarPosition tonality={tonality} startingFret={12} /> */}
-      {/* <h2>Shapes</h2>
-      <GuitarPosition tonality={tonality} labels startingFret={8} frets={4} getLabel={numericLabel(false)} /> */}
+      <h2>Positions</h2>
+      {positions.map((position, positionKey) => {
+        const poz = getPosition(tonality, position);
+        return (
+          <React.Fragment key={positionKey}>
+            <GuitarPosition
+              octaveColors
+              key={positionKey * 2 + 1}
+              tonality={tonality}
+              labels
+              getLabel={numericLabel()}
+              startingFret={position - 1}
+              frets={positionLength(poz)}
+              getFret={positionGetFret(poz, defaultGuitarNoteProvider)}
+            />
+            <br key={positionKey * 2} />
+          </React.Fragment>
+        );
+      })}
     </div>
   );
 }

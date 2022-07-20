@@ -1,5 +1,5 @@
 import { Note } from "./note";
-import { Scale } from "./scale";
+import { keyNotes, Scale } from "./scale";
 import { TonalTuning, Tuning } from "./tunings";
 
 export type OldTonality = {
@@ -13,3 +13,7 @@ export type Tonality = {
   scale: Scale;
   tuning: TonalTuning;
 };
+
+export function tonalityNotes(tonality: Tonality): Note[] {
+  return keyNotes(tonality.scale.key(tonality.keyCenter));
+}
