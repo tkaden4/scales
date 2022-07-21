@@ -4,7 +4,7 @@ import { Tonality } from "../src";
 import { accidentals, allNotes, naturalNotes } from "../src/note";
 import { getPosition, positionGetFret, positionLength } from "../src/positions";
 import { allScales, majorScale } from "../src/scale";
-import { allTunings, parseTuning, toTonalTuning } from "../src/tunings";
+import { allTunings, parseTuning } from "../src/tunings";
 import { numericLabel } from "./Fretboard";
 import { defaultGuitarNoteProvider, Guitar, GuitarPosition } from "./Guitar";
 
@@ -37,15 +37,10 @@ export function getURLFromProps(props: ScaleToolProps) {
 function ScaleTool(props: ScaleToolProps) {
   const selectedScale = allScales.find((s) => s.name === props.scale) ?? majorScale;
   const keyCenter = allNotes.find((n) => n === props.keyCenter) ?? "E";
-  const selectedTuning =
-    allTunings.find((t) => t.name === props.tuning) ??
-    toTonalTuning(
-      {
-        name: props.tuning,
-        notes: parseTuning(props.tuning),
-      },
-      2
-    );
+  const selectedTuning = allTunings.find((t) => t.name === props.tuning) ?? {
+    name: props.tuning,
+    tones: parseTuning(props.tuning),
+  };
   const tonality: Tonality = {
     keyCenter: keyCenter,
     scale: selectedScale,
@@ -107,7 +102,7 @@ function ScaleTool(props: ScaleToolProps) {
         </Link>
       ))}
       <h2>Fretboard</h2>
-      <Guitar tonality={tonality} />
+      <Guitar tonality={tonality} octaveColors />
       <h2>Positions</h2>
       {positions.map((position, positionKey) => {
         const poz = getPosition(tonality, position);
@@ -115,7 +110,6 @@ function ScaleTool(props: ScaleToolProps) {
           <React.Fragment key={positionKey}>
             <GuitarPosition
               octaveColors
-              key={positionKey * 2 + 1}
               tonality={tonality}
               labels
               getLabel={numericLabel()}
@@ -123,7 +117,7 @@ function ScaleTool(props: ScaleToolProps) {
               frets={positionLength(poz)}
               getFret={positionGetFret(poz, defaultGuitarNoteProvider)}
             />
-            <br key={positionKey * 2} />
+            <br />
           </React.Fragment>
         );
       })}

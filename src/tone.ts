@@ -1,4 +1,4 @@
-import { indexToNote, NaturalNote, Note, noteIndex, noteOps } from "./note";
+import { accidentals, indexToNote, NaturalNote, naturalNotes, Note, noteIndex, noteOps } from "./note";
 
 export type Tone = `${Note}${number}`;
 
@@ -41,3 +41,25 @@ export const toneOps = {
     return toneValue(b) - toneValue(a);
   },
 };
+
+export function enharmonics(t: Tone): Tone[] {
+  return toneOps.offset(t, 0);
+}
+
+export function parseTone(s: string): [Tone | Note | undefined, string] {
+  const note = accidentals.find((a) => s.startsWith(a)) ?? naturalNotes.find((n) => s.startsWith(n));
+  if (note === undefined) {
+    return [undefined, s];
+  }
+  const rrest = s.slice(note.length);
+  let rest = s.slice(note.length);
+  let n = "";
+  while (/\d+/.test(rest[0])) {
+    n += rest[0];
+    rest = rest.slice(1);
+  }
+  if (n.length === 0) {
+    return [note, rrest];
+  }
+  return [tone(note, +n), rest];
+}

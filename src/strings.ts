@@ -1,6 +1,16 @@
 import _ from "lodash";
 import { indexToNote, Note, noteIndex, NoteIndex, offset } from "./note";
 import { getScale, Key } from "./scale";
+import { Tone, toneOps } from "./tone";
+import { TonalTuning } from "./tunings";
+
+export class StringTone {
+  constructor(public readonly wire: number, public readonly fret: number) {}
+
+  inTuning(tuning: TonalTuning): Tone[] {
+    return toneOps.offset(tuning.tones[this.wire], this.fret);
+  }
+}
 
 export function getFrets(tuning: Note[], nfrets: number) {
   return tuning.map((note) => _.range(0, nfrets + 1).map((fret) => indexToNote(offset(note, fret))));

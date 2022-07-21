@@ -1,6 +1,6 @@
-import { isNote, Note } from "./note";
+import { isNote, Note, noteDistance } from "./note";
 import { getTuningIntervals } from "./positions";
-import { tone, Tone, toneOps } from "./tone";
+import { parseTone, tone, Tone, toneNote, toneOps } from "./tone";
 
 export const standardTuning: Note[] = ["E", "A", "D", "G", "B", "E"];
 export const allFourthsTuning: Note[] = ["E", "A", "D", "G", "C", "F"];
@@ -48,12 +48,63 @@ function parseNote(s: string): [Note | undefined, string] {
   }
 }
 
-export function parseTuning(tuning: string): Note[] {
-  const [note, rest] = parseNote(tuning);
+function _parseTuning(tuning: string): (Note | Tone)[] {
+  const [note, rest] = parseTone(tuning.trim());
   if (note === undefined) {
     throw new Error(`${tuning} is an invalid tuning.`);
   }
-  return [note, ...(rest.length > 0 ? parseTuning(rest) : [])];
+  return [note, ...(rest.length > 0 ? _parseTuning(rest) : [])];
+}
+
+export function parseTuning(tuning: string): Tone[] {
+  return fixTuning(_parseTuning(tuning));
+}
+
+export function fixTuning(tn: (Tone | Note)[]): Tone[] {
+  function fixTuningSolo(a: Tone): Tone[] {
+    return [a];
+  }
+  function fixTuningSoloB(b: Note): Tone[] {
+    return [tone(b, 3)];
+  }
+
+  function fixTuningA(a: Note, b: Tone, rest: (Tone | Note)[]): Tone[] {
+    const distance = noteDistance(a, toneNote(b));
+    return [toneOps.offset(b, -distance)[0], ...fixTuning([b, ...rest])];
+  }
+
+  function fixTuningB(a: Tone, b: Note, rest: (Tone | Note)[]): Tone[] {
+    const distance = noteDistance(toneNote(a), b);
+    return [a, ...fixTuning([toneOps.offset(a, distance)[0], ...rest])];
+  }
+
+  function fixTuningC(a: Tone, b: Tone, rest: (Tone | Note)[]): Tone[] {
+    return [a, ...fixTuning([b, ...rest])];
+  }
+
+  function fixTuningD(a: Note, b: Note, rest: (Tone | Note)[]): Tone[] {
+    const restFixed = fixTuning(rest);
+    const moreFixed = fixTuning([b, ...restFixed]);
+    return fixTuning([b, ...moreFixed]);
+  }
+
+  const [a, b, ...rest] = tn;
+  const aIsNote = isNote(a);
+  if (b === undefined) {
+    return isNote(a) ? fixTuningSoloB(a) : fixTuningSolo(a);
+  }
+  const bIsNote = isNote(b);
+  if (aIsNote && bIsNote) {
+    return fixTuningD(a, b, rest);
+  } else if (aIsNote && !bIsNote) {
+    return fixTuningA(a, b, rest);
+  } else if (!aIsNote && bIsNote) {
+    return fixTuningB(a, b, rest);
+  } else if (!aIsNote && !bIsNote) {
+    return fixTuningC(a, b, rest);
+  } else {
+    throw new Error("Impossible");
+  }
 }
 
 export type TonalTuning = {

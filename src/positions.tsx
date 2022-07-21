@@ -68,3 +68,5 @@ export const positionGetFret =
     const enable = tones.some((tone) => thisString.includes(tone)) && !isInPreviousString && !isPastEnd;
     return defaultProvider(!enable)(tones, props)(s, f, ws, wb);
   };
+
+export function octaveShapes(tonality: Tonality) {}
