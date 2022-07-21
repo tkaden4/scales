@@ -60,17 +60,21 @@ export function parseTuning(tuning: string): Tone[] {
   return fixTuning(_parseTuning(tuning));
 }
 
-export function fixTuning(tn: (Tone | Note)[]): Tone[] {
+export function fixTuning(tn: (Tone | Note)[], highestOctave = 4): Tone[] {
+  if (tn.length == 0) {
+    return [];
+  }
+
   function fixTuningSolo(a: Tone): Tone[] {
     return [a];
   }
   function fixTuningSoloB(b: Note): Tone[] {
-    return [tone(b, 3)];
+    return [tone(b, highestOctave)];
   }
 
   function fixTuningA(a: Note, b: Tone, rest: (Tone | Note)[]): Tone[] {
     const distance = noteDistance(a, toneNote(b));
-    return [toneOps.offset(b, -distance)[0], ...fixTuning([b, ...rest])];
+    return [toneOps.subtract(b, distance)[0], ...fixTuning([b, ...rest])];
   }
 
   function fixTuningB(a: Tone, b: Note, rest: (Tone | Note)[]): Tone[] {
@@ -83,9 +87,8 @@ export function fixTuning(tn: (Tone | Note)[]): Tone[] {
   }
 
   function fixTuningD(a: Note, b: Note, rest: (Tone | Note)[]): Tone[] {
-    const restFixed = fixTuning(rest);
-    const moreFixed = fixTuning([b, ...restFixed]);
-    return fixTuning([b, ...moreFixed]);
+    const moreFixed = fixTuning([b, ...rest]);
+    return fixTuning([a, ...moreFixed]);
   }
 
   const [a, b, ...rest] = tn;

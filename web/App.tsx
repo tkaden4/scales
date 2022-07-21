@@ -102,7 +102,7 @@ function ScaleTool(props: ScaleToolProps) {
         </Link>
       ))}
       <h2>Fretboard</h2>
-      <Guitar tonality={tonality} octaveColors />
+      <Guitar tonality={tonality} octaveColors showOctaves />
       <h2>Positions</h2>
       {positions.map((position, positionKey) => {
         const poz = getPosition(tonality, position);

@@ -25,6 +25,12 @@ export function toneValue(tone: Tone) {
   return 12 * toneOctave(tone) + noteIndex(toneNote(tone));
 }
 
+function fromNumber(t: number): Tone[] {
+  const val = t % 12;
+  const oct = (t - val) / 12;
+  return toneOps.offset(tone("C", oct), val);
+}
+
 export const toneOps = {
   offset(a: Tone, semitones: number): Tone[] {
     const octave = toneOctave(a);
@@ -32,6 +38,9 @@ export const toneOps = {
     const octaveDiff = Math.trunc((semitones + noteIndex(toneNote(a))) / 12);
     const chroma = noteOps.offset(toneNote(a), chromaDiff);
     return indexToNote(chroma).map((n) => tone(n, octave + octaveDiff));
+  },
+  subtract(a: Tone, semitones: number): Tone[] {
+    return fromNumber(toneValue(a) - semitones);
   },
   octaveOffset(a: Tone, tonic: Note): number {
     const t = this.offset(a, 12 - noteIndex(tonic))[0];
