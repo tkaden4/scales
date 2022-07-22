@@ -21,15 +21,9 @@ export const defaultOutOfKeyColor: ColorLike = "#dadada";
 export const defaultStringColor: ColorLike = "#b0b0b0";
 export const defaultNutColor: ColorLike = "#505060";
 
-export const octaveColors = [
-  "brown",
-  "blue",
-  "mediumslateblue",
-  "dodgerblue",
-  "orangered",
-  "crimson",
-  "forestgreen",
-].map((color) => coerceColor(color).lightness(65));
+export const octaveColors = ["brown", "mediumslateblue", "dodgerblue", "orangered", "crimson", "forestgreen"].map(
+  (color) => coerceColor(color).lightness(65)
+);
 
 export function octaveColor(tone: tone.Tone, keyCenter: Note) {
   return coerceColor(octaveColors[toneOps.octaveOffset(tone, keyCenter) % octaveColors.length]);

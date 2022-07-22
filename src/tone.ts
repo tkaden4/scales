@@ -49,11 +49,10 @@ export const toneOps = {
   interval(a: Tone, b: Tone): number {
     return toneValue(b) - toneValue(a);
   },
+  enharmonics(t: Tone): Tone[] {
+    return toneOps.offset(t, 0);
+  },
 };
-
-export function enharmonics(t: Tone): Tone[] {
-  return toneOps.offset(t, 0);
-}
 
 export function parseTone(s: string): [Tone | Note | undefined, string] {
   const note = accidentals.find((a) => s.startsWith(a)) ?? naturalNotes.find((n) => s.startsWith(n));
