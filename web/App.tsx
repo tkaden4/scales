@@ -1,12 +1,10 @@
 import React from "react";
 import { HashRouter, Link, useLocation } from "react-router-dom";
-import { Tonality, tonalityNotes } from "../src";
-import { majorChord, minorChord } from "../src/chords";
+import { Tonality } from "../src";
 import { accidentals, allNotes, naturalNotes } from "../src/note";
 import { getPosition, positionGetFret, positionLength } from "../src/positions";
 import { allScales, majorScale } from "../src/scale";
 import { allTunings, parseTuning } from "../src/tunings";
-import { ChordDiagram } from "./ChordDiagram";
 import { numericLabel } from "./Fretboard";
 import { defaultGuitarNoteProvider, Guitar, GuitarPosition } from "./Guitar";
 
@@ -105,10 +103,6 @@ function ScaleTool(props: ScaleToolProps) {
       ))}
       <h2>Fretboard</h2>
       <Guitar tonality={tonality} octaveColors showOctaves />
-      <h2>Chords</h2>
-      <ChordDiagram chordStructure={majorChord.structure} root={tonality.keyCenter} tonality={tonality} />
-      <br />
-      <ChordDiagram chordStructure={minorChord.structure} root={tonalityNotes(tonality)[1]} tonality={tonality} />
       <br />
       <h2>Positions</h2>
       {positions.map((position, positionKey) => {
