@@ -1,10 +1,12 @@
 import React from "react";
 import { HashRouter, Link, useLocation } from "react-router-dom";
-import { Tonality } from "../src";
+import { Tonality, tonalityNotes } from "../src";
+import { majorChord, minorChord } from "../src/chords";
 import { accidentals, allNotes, naturalNotes } from "../src/note";
 import { getPosition, positionGetFret, positionLength } from "../src/positions";
 import { allScales, majorScale } from "../src/scale";
 import { allTunings, parseTuning } from "../src/tunings";
+import { ChordDiagram } from "./ChordDiagram";
 import { numericLabel } from "./Fretboard";
 import { defaultGuitarNoteProvider, Guitar, GuitarPosition } from "./Guitar";
 
@@ -103,19 +105,24 @@ function ScaleTool(props: ScaleToolProps) {
       ))}
       <h2>Fretboard</h2>
       <Guitar tonality={tonality} octaveColors showOctaves />
+      <h2>Chords</h2>
+      <ChordDiagram chordStructure={majorChord.structure} root={tonality.keyCenter} tonality={tonality} />
+      <br />
+      <ChordDiagram chordStructure={minorChord.structure} root={tonalityNotes(tonality)[1]} tonality={tonality} />
+      <br />
       <h2>Positions</h2>
       {positions.map((position, positionKey) => {
         const poz = getPosition(tonality, position);
         return (
           <React.Fragment key={positionKey}>
             <GuitarPosition
-              octaveColors
+              // octaveColors
               tonality={tonality}
               labels
               getLabel={numericLabel()}
               startingFret={position - 1}
               frets={positionLength(poz)}
-              getFret={positionGetFret(poz, defaultGuitarNoteProvider)}
+              getFret={positionGetFret(poz, (d) => defaultGuitarNoteProvider(d, false))}
             />
             <br />
           </React.Fragment>

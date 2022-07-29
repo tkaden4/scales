@@ -1,10 +1,9 @@
 import _ from "lodash";
 import React, { ReactElement } from "react";
 import { allNotes, noteIndex } from "../src/note";
-import { Tone, toneNote } from "../src/tone";
 import { ColorLike, colorValue } from "../src/util";
 import "./Fretboard.module.css";
-import { defaultStringColor } from "./Guitar";
+import { defaultNutColor, defaultStringColor } from "./Guitar";
 
 export const defaultFretColor = "#bbbbbb";
 
@@ -36,6 +35,7 @@ export const numericLabel =
 export type FretProvider = (string: number, fret: number, withString?: any, withBorder?: any) => ReactElement;
 export type LabelProvider = (fret: number, lower: boolean) => ReactElement | undefined | void;
 export type FretboardProps = {
+  rotation?: number;
   strings: number;
   frets: number;
   fretSize?: number;
@@ -57,18 +57,38 @@ function getStringGradient(size: number, color: ColorLike, backgroundColor: Colo
   `;
 }
 
-export type NoteProps = {
-  color: ColorLike;
-  border?: string;
-  tone: Tone;
-  includeOctave?: boolean;
+export type FretProps = {
+  stringSize?: number;
+  stringColor?: string;
+  fretSize?: number;
+  fretColor?: string;
+  nutColor?: string;
+  nut?: boolean;
+  children?: any;
 };
 
-export function Tone(props: NoteProps) {
+export function Fret({ children, stringSize, nutColor, nut = false, stringColor, fretColor, fretSize }: FretProps) {
+  const withString = (background?: string) => ({
+    background: getStringGradient(stringSize ?? 1, stringColor ?? defaultStringColor, background),
+  });
+  const withBorder = {
+    borderRight: `${fretSize ?? 5}px solid ${fretColor ?? defaultFretColor}`,
+  };
   return (
-    <div className="fretboard-note" style={{ backgroundColor: colorValue(props.color), border: props.border }}>
-      {props.includeOctave ?? true ? props.tone : toneNote(props.tone)}
-    </div>
+    <div
+      style={{
+        display: "flex",
+        width: "100%",
+        height: "100%",
+        textAlign: "center",
+        justifyContent: "center",
+        alignItems: "center",
+        boxSizing: !nut ? "border-box" : undefined,
+        ...withBorder,
+        ...(nut ? { borderRight: `10px solid ${nutColor ?? defaultNutColor}` } : withString(undefined)),
+      }}
+      children={children}
+    />
   );
 }
 
@@ -77,6 +97,7 @@ export function Fretboard(props: FretboardProps) {
     <div
       className="fretboard"
       style={{
+        transform: `rotate(${props.rotation ?? 0}deg)`,
         color: "#999999",
         gridTemplateRows: `repeat(${props.strings + (props.labels ?? true ? 2 : 1)}, 60px)`,
         gridTemplateColumns: `repeat(${props.frets + 1}, 141px)`,

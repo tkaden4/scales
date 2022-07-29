@@ -1,3 +1,4 @@
+import { getMode, modes } from "./modes";
 import { indexToNote, isNaturalNote, keyChroma, Note, noteIndex, NoteIndex } from "./note";
 
 export type HeptatonicScaleFormula = [NoteIndex, NoteIndex, NoteIndex, NoteIndex, NoteIndex, NoteIndex, NoteIndex];
@@ -90,7 +91,27 @@ export const chromaticScale: Scale = {
   }),
 };
 
-export const allScales = [majorScale, minorScale, harmonicMinorScale, doubleHarmonicMinorScale, chromaticScale];
+export const allScales: Scale[] = [
+  majorScale,
+  minorScale,
+  harmonicMinorScale,
+  doubleHarmonicMinorScale,
+  chromaticScale,
+  ...modes.map((mode) => ({
+    name: mode.name,
+    key: (note: Note): Key => ({
+      keynote: note,
+      name: mode.name,
+      scaleFormula: getMode(
+        {
+          degrees: majorScaleFormula.length,
+          ...majorScaleFormula,
+        },
+        mode
+      ),
+    }),
+  })),
+];
 
 export function keyNotes(key: Key) {
   return getScale(key.keynote, key.scaleFormula);

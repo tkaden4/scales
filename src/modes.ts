@@ -1,12 +1,15 @@
 import { ScaleFormula } from "./scale";
 
-export function mode(scale: ScaleFormula, scaleDegree: number): ScaleFormula {
-  return new Proxy(scale, {
-    get(target, p, r) {
-      const i = +(p as any);
-      return target[(i + scaleDegree) % scale.degrees];
-    },
-  });
+export function getMode(scale: ScaleFormula, mode: Mode): ScaleFormula {
+  const intervals = [];
+  for (let i = 0; i < scale.degrees; ++i) {
+    const distance = (scale[(i + mode.startingDegree) % scale.degrees] - scale[mode.startingDegree] + 12) % 12;
+    intervals.push(distance);
+  }
+  return {
+    degrees: scale.degrees,
+    ...intervals,
+  };
 }
 
 export type Mode = {

@@ -125,18 +125,6 @@ export function noteDistance(lower: Note, upper: Note) {
   return ((noteIndex(upper) - noteIndex(lower) + 12) % 12) as NoteIndex;
 }
 
-// export class RichNote {
-//   private constructor(private index: NoteIndex) {}
-
-//   static fromIndex(index: NoteIndex) {
-//     return new RichNote(index);
-//   }
-
-//   static fromNote(note: Note) {
-//     return RichNote.fromIndex(noteIndex(note));
-//   }
-// }
-
 export const noteOps = {
   offset(note: Note, semitones: number) {
     return offset(note, semitones);

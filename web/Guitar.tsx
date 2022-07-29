@@ -5,15 +5,9 @@ import { keyNotes } from "../src/scale";
 import * as tone from "../src/tone";
 import { toneNote, toneOps } from "../src/tone";
 import { coerceColor, ColorLike, colorValue } from "../src/util";
-import {
-  defaultFretColor,
-  Fretboard,
-  FretboardProps,
-  FretProvider,
-  NORMAL_LABELED_FRET_OFFSETS,
-  Tone,
-} from "./Fretboard";
+import { defaultFretColor, Fretboard, FretboardProps, FretProvider, NORMAL_LABELED_FRET_OFFSETS } from "./Fretboard";
 import { Position } from "./Position";
+import { Tone } from "./Tone";
 
 export const defaultSelectedColor: ColorLike = "#ff5070";
 export const defaultUnselectedColor: ColorLike = "#30c2ba";
@@ -21,7 +15,7 @@ export const defaultOutOfKeyColor: ColorLike = "#dadada";
 export const defaultStringColor: ColorLike = "#b0b0b0";
 export const defaultNutColor: ColorLike = "#505060";
 
-export const octaveColors = ["brown", "mediumslateblue", "dodgerblue", "orangered", "crimson", "forestgreen"].map(
+export const octaveColors = ["red", "crimson", "slateblue", "forestgreen", "orangered", "dodgerblue", "purple"].map(
   (color) => coerceColor(color).lightness(65)
 );
 
@@ -33,6 +27,7 @@ export type GuitarNoteProvider = (tone: tone.Tone[], guitarProps: GuitarProps) =
 
 export type GuitarProps = {
   tonality: Tonality;
+  showNotes?: boolean;
   frets?: number;
   fretColor?: ColorLike;
   selectedColor?: ColorLike;
@@ -66,7 +61,70 @@ export function defaultGetGuitarLabel(fret: number, upper: boolean) {
   );
 }
 
+export function basicRenderGuitarFret(
+  showTone: boolean,
+  keyNote: Note[],
+  notes: tone.Tone[],
+  tonality: Tonality,
+  disable: boolean,
+  nutColor: ColorLike,
+  selectedColor: ColorLike,
+  outOfKeyColor: ColorLike,
+  unselectedColor: ColorLike,
+  string: number,
+  fret: number,
+  withString: any,
+  withBorder: any,
+  showOctaves: boolean,
+  octaveColors: boolean
+) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        width: "100%",
+        height: "100%",
+        textAlign: "center",
+        justifyContent: "center",
+        alignItems: "center",
+        boxSizing: fret > 0 && "border-box",
+        ...withBorder,
+        ...(fret === 0 ? { borderRight: `10px solid ${nutColor}` } : withString(undefined)),
+      }}
+    >
+      {notes.map((tone, key) => (
+        <Tone
+          showTone={showTone}
+          key={key}
+          tone={tone}
+          includeOctave={showOctaves}
+          border={
+            !disable && toneNote(tone) === tonality.keyCenter && octaveColors
+              ? `4px solid ${colorValue(octaveColor(tone, tonality.keyCenter).rotate(-10).lighten(0.25))}`
+              : ""
+          }
+          color={
+            disable
+              ? outOfKeyColor
+              : toneNote(tone) === tonality.keyCenter
+              ? octaveColors
+                ? octaveColor(tone, tonality.keyCenter)
+                : selectedColor
+              : !keyNote.includes(toneNote(tone))
+              ? outOfKeyColor
+              : octaveColors
+              ? octaveColor(tone, tonality.keyCenter)
+              : unselectedColor
+          }
+        />
+      ))}
+    </div>
+  );
+}
+
 export function defaultGetGuitarFret(
+  tone: tone.Tone[],
+  showTone: boolean,
   tonality: Tonality,
   disable: boolean,
   nutColor: ColorLike,
@@ -82,8 +140,7 @@ export function defaultGetGuitarFret(
 ) {
   const key = tonality.scale.key(tonality.keyCenter);
   const _keyNotes = keyNotes(key);
-  const startingNote = tonality.tuning.tones.slice().reverse()[string];
-  const notes = toneOps.offset(startingNote, fret);
+  const notes = tone;
   const filtered = notes.filter((tone) => _keyNotes.includes(toneNote(tone)));
 
   return (
@@ -102,6 +159,7 @@ export function defaultGetGuitarFret(
     >
       {(filtered.length !== 1 ? notes : filtered).map((tone, key) => (
         <Tone
+          showTone={showTone}
           key={key}
           tone={tone}
           includeOctave={showOctaves}
@@ -129,11 +187,20 @@ export function defaultGetGuitarFret(
   );
 }
 
+export const onlyNotes =
+  (notes: Note[], fallback: (noNote: boolean) => GuitarNoteProvider): GuitarNoteProvider =>
+  (tones, props) =>
+  (string, fret, w, w0) => {
+    return fallback(!tones.some((tone) => notes.includes(toneNote(tone))))(tones, props)(string, fret, w, w0);
+  };
+
 export const defaultGuitarNoteProvider =
-  (disable: boolean): GuitarNoteProvider =>
+  (disable: boolean, noNote: boolean): GuitarNoteProvider =>
   (tone, props) =>
   (string, fret, w, w0) =>
     defaultGetGuitarFret(
+      tone,
+      !noNote,
       props.tonality,
       disable,
       props.nutColor ?? defaultNutColor,
@@ -160,6 +227,7 @@ export function Guitar(_props: GuitarProps) {
     frets = 12,
     showOctaves = false,
     octaveColors = false,
+    showNotes = true,
     getFret,
     ...props
   } = _props;
@@ -170,15 +238,14 @@ export function Guitar(_props: GuitarProps) {
       strings={tonality.tuning.tones.length}
       frets={frets}
       getFret={(string, fret, w, wb) => {
-        const key = tonality.scale.key(tonality.keyCenter);
-        const _keyNotes = keyNotes(key);
         const startingNote = tonality.tuning.tones.slice().reverse()[string];
         const notes = toneOps.offset(startingNote, fret);
-        const filtered = notes.filter((tone) => _keyNotes.includes(toneNote(tone)));
 
         return (
-          getFret?.(filtered, _props)(string, fret, w, wb) ??
+          getFret?.(notes, _props)(string, fret, w, wb) ??
           defaultGetGuitarFret(
+            notes,
+            showNotes,
             tonality,
             false,
             nutColor,
@@ -217,21 +284,21 @@ export function GuitarPosition(props: GuitarPositionProps) {
     frets = 12,
     showOctaves = false,
     octaveColors = false,
+    showNotes = true,
     ...extra
   } = props;
   return (
     <Position
       strings={props.tonality.tuning.tones.length}
       getFret={(string, fret, w, wb) => {
-        const key = tonality.scale.key(tonality.keyCenter);
-        const _keyNotes = keyNotes(key);
         const startingNote = tonality.tuning.tones.slice().reverse()[string];
         const notes = toneOps.offset(startingNote, fret);
-        const filtered = notes.filter((tone) => _keyNotes.includes(toneNote(tone)));
 
         return (
-          props.getFret?.(filtered, props)(string, fret, w, wb) ??
+          extra.getFret?.(notes, props)(string, fret, w, wb) ??
           defaultGetGuitarFret(
+            notes,
+            showNotes,
             tonality,
             false,
             nutColor,
@@ -253,6 +320,8 @@ export function GuitarPosition(props: GuitarPositionProps) {
       tonality={tonality}
       fretColor={fretColor}
       stringColor={stringColor}
+      rotation={extra.rotation}
+      labels={extra.labels}
     />
   );
 }
