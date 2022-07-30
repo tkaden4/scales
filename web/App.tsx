@@ -52,13 +52,14 @@ function ScaleTool(props: ScaleToolProps) {
     tuning: selectedTuning,
   };
   const { name: selectedTheme, theme } = themes.find((x) => x.name === props.theme) ?? themes[0];
+  document.body.style.backgroundColor = colorValue(theme.backgroundColor);
   return (
     <div
       style={{
         padding: "15px",
         margin: 0,
-        height: "100%",
-        width: "100%",
+        height: "inherit",
+        width: "inherit",
         backgroundColor: colorValue(theme.backgroundColor),
         color: colorValue(theme.textColor),
       }}
