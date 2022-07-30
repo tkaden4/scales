@@ -11,10 +11,6 @@ import { defaultGuitarNoteProvider, Guitar, GuitarPosition } from "./Guitar";
 import { themes } from "./theme";
 import { Tone } from "./Tone";
 
-const selectedColor = "#fe2040c0";
-const unselectedColor = "#20b2aad0";
-const mutedColor = "#bababaa0";
-
 // A custom hook that builds on useLocation to parse
 // the query string for you.
 function useQuery() {
@@ -205,10 +201,26 @@ function ScaleTool(props: ScaleToolProps) {
 
 export function Main() {
   let query = useQuery();
-  const keyCenter = query.get("keyCenter");
-  const tuning = query.get("tuning");
-  const scale = query.get("scale");
-  const theme = query.get("theme");
+  const inStorage = JSON.parse(localStorage.getItem("scale-props") ?? "{}");
+  const keyCenter = query.get("keyCenter") ?? inStorage.keyCenter;
+  const tuning = query.get("tuning") ?? inStorage.tuning;
+  const scale = query.get("scale") ?? inStorage.scale;
+  const theme = query.get("theme") ?? inStorage.theme;
+  React.useEffect(() => {
+    localStorage.setItem(
+      "scale-props",
+      JSON.stringify(
+        {
+          keyCenter,
+          tuning,
+          scale,
+          theme,
+        },
+        null,
+        0
+      )
+    );
+  }, [query]);
   return (
     <ScaleTool
       keyCenter={keyCenter ?? "E"}
