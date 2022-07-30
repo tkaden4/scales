@@ -15,11 +15,13 @@ export const defaultOutOfKeyColor: ColorLike = "#dadada";
 export const defaultStringColor: ColorLike = "#b0b0b0";
 export const defaultNutColor: ColorLike = "#505060";
 
-export const octaveColors = ["red", "crimson", "slateblue", "forestgreen", "orangered", "dodgerblue", "purple"].map(
-  (color) => coerceColor(color).lightness(65)
-);
+export interface GuitarColors {
+  nutColor: ColorLike;
+  fretColor: ColorLike;
+  stringcolor: ColorLike;
+}
 
-export function octaveColor(tone: tone.Tone, keyCenter: Note) {
+export function octaveColor(tone: tone.Tone, keyCenter: Note, octaveColors: ColorLike[]) {
   return coerceColor(octaveColors[toneOps.octaveOffset(tone, keyCenter) % octaveColors.length]);
 }
 
@@ -37,6 +39,7 @@ export type GuitarProps = {
   nutColor?: ColorLike;
   showOctaves?: boolean;
   octaveColors?: boolean;
+  octaveColorsValues?: ColorLike[];
   getFret?: GuitarNoteProvider;
 } & Omit<Partial<FretboardProps>, "getFret">;
 
@@ -76,7 +79,8 @@ export function basicRenderGuitarFret(
   withString: any,
   withBorder: any,
   showOctaves: boolean,
-  octaveColors: boolean
+  octaveColors: boolean,
+  octaveColorsArray: string[]
 ) {
   return (
     <div
@@ -100,7 +104,9 @@ export function basicRenderGuitarFret(
           includeOctave={showOctaves}
           border={
             !disable && toneNote(tone) === tonality.keyCenter && octaveColors
-              ? `4px solid ${colorValue(octaveColor(tone, tonality.keyCenter).rotate(-10).lighten(0.25))}`
+              ? `4px solid ${colorValue(
+                  octaveColor(tone, tonality.keyCenter, octaveColorsArray).rotate(-10).lighten(0.25)
+                )}`
               : ""
           }
           color={
@@ -108,12 +114,12 @@ export function basicRenderGuitarFret(
               ? outOfKeyColor
               : toneNote(tone) === tonality.keyCenter
               ? octaveColors
-                ? octaveColor(tone, tonality.keyCenter)
+                ? octaveColor(tone, tonality.keyCenter, octaveColorsArray)
                 : selectedColor
               : !keyNote.includes(toneNote(tone))
               ? outOfKeyColor
               : octaveColors
-              ? octaveColor(tone, tonality.keyCenter)
+              ? octaveColor(tone, tonality.keyCenter, octaveColorsArray)
               : unselectedColor
           }
         />
@@ -136,7 +142,8 @@ export function defaultGetGuitarFret(
   withString: any,
   withBorder: any,
   showOctaves: boolean,
-  octaveColors: boolean
+  octaveColors: boolean,
+  octaveColorsArray: ColorLike[]
 ) {
   const key = tonality.scale.key(tonality.keyCenter);
   const _keyNotes = keyNotes(key);
@@ -152,6 +159,8 @@ export function defaultGetGuitarFret(
         textAlign: "center",
         justifyContent: "center",
         alignItems: "center",
+        cursor: "pointer",
+        userSelect: "none",
         boxSizing: fret > 0 && "border-box",
         ...withBorder,
         ...(fret === 0 ? { borderRight: `10px solid ${nutColor}` } : withString(undefined)),
@@ -159,13 +168,16 @@ export function defaultGetGuitarFret(
     >
       {(filtered.length !== 1 ? notes : filtered).map((tone, key) => (
         <Tone
+          audible
           showTone={showTone}
           key={key}
           tone={tone}
           includeOctave={showOctaves}
           border={
             !disable && toneNote(tone) === tonality.keyCenter && octaveColors
-              ? `4px solid ${colorValue(octaveColor(tone, tonality.keyCenter).rotate(-10).lighten(0.25))}`
+              ? `4px solid ${colorValue(
+                  octaveColor(tone, tonality.keyCenter, octaveColorsArray).rotate(-10).lighten(0.25)
+                )}`
               : ""
           }
           color={
@@ -173,12 +185,12 @@ export function defaultGetGuitarFret(
               ? outOfKeyColor
               : toneNote(tone) === tonality.keyCenter
               ? octaveColors
-                ? octaveColor(tone, tonality.keyCenter)
+                ? octaveColor(tone, tonality.keyCenter, octaveColorsArray)
                 : selectedColor
               : !_keyNotes.includes(toneNote(tone))
               ? outOfKeyColor
               : octaveColors
-              ? octaveColor(tone, tonality.keyCenter)
+              ? octaveColor(tone, tonality.keyCenter, octaveColorsArray)
               : unselectedColor
           }
         />
@@ -212,7 +224,8 @@ export const defaultGuitarNoteProvider =
       w,
       w0,
       props.showOctaves ?? false,
-      props.octaveColors ?? false
+      props.octaveColors ?? false,
+      props.octaveColorsValues ?? ["red"]
     );
 
 export function Guitar(_props: GuitarProps) {
@@ -257,7 +270,8 @@ export function Guitar(_props: GuitarProps) {
             w,
             wb,
             showOctaves,
-            octaveColors
+            octaveColors,
+            props.octaveColorsValues ?? [selectedColor]
           )
         );
       }}
@@ -310,7 +324,8 @@ export function GuitarPosition(props: GuitarPositionProps) {
             w,
             wb,
             showOctaves,
-            octaveColors
+            octaveColors,
+            props.octaveColorsValues ?? []
           )
         );
       }}
