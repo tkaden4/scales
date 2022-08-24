@@ -22,7 +22,7 @@ export const numericLabel =
           width: "100%",
           height: "100%",
           justifyContent: "center",
-          alignItems: "flex-end",
+          alignItems: lower ? "flex-start" : "flex-end",
           fontWeight: "bold",
           fontSize: "20px",
         }}

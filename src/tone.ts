@@ -1,4 +1,5 @@
-import { accidentals, indexToNote, NaturalNote, naturalNotes, Note, noteIndex, noteOps } from "./note";
+import { isNote } from "tone";
+import { accidentals, indexToNote, NaturalNote, naturalNotes, Note, noteIndex } from "./note";
 
 export type Tone = `${Note}${number}`;
 
@@ -31,20 +32,69 @@ function fromNumber(t: number): Tone[] {
   return toneOps.offset(tone("C", oct), val);
 }
 
+function octaveIndex(n: Note) {
+  switch (n) {
+    case "Cb":
+      return -1;
+    case "C":
+      return 0;
+    case "C#":
+    case "Db":
+      return 1;
+    case "D":
+      return 2;
+    case "D#":
+    case "Eb":
+      return 3;
+    case "E":
+    case "Fb":
+      return 4;
+    case "E#":
+    case "F":
+      return 5;
+    case "F#":
+    case "Gb":
+      return 6;
+    case "G":
+      return 7;
+    case "G#":
+    case "Ab":
+      return 8;
+    case "A":
+      return 9;
+    case "A#":
+    case "Bb":
+      return 10;
+    case "B":
+      return 11;
+    case "B#":
+      return 12;
+  }
+}
+
+function fromSemitones(semitones: number): Tone[] {
+  const octave = Math.trunc(semitones / 12);
+  const note = semitones % 12;
+  const noteChroma = indexToNote(note as any);
+  return noteChroma.map((note) => {
+    const newOctave = octave - Math.trunc(octaveIndex(note) / 12);
+    return tone(note, newOctave);
+  });
+}
+
 export const toneOps = {
   offset(a: Tone, semitones: number): Tone[] {
-    const octave = toneOctave(a);
-    const chromaDiff = (semitones + 12) % 12;
-    const octaveDiff = Math.trunc((semitones + noteIndex(toneNote(a))) / 12);
-    const chroma = noteOps.offset(toneNote(a), chromaDiff);
-    return indexToNote(chroma).map((n) => tone(n, octave + octaveDiff));
+    return fromSemitones(toneValue(a) + semitones);
+  },
+  pitchOctave(a: Tone): number {
+    return toneOctave(a) + Math.trunc(octaveIndex(toneNote(a)) / 12);
   },
   subtract(a: Tone, semitones: number): Tone[] {
     return fromNumber(toneValue(a) - semitones);
   },
   octaveOffset(a: Tone, tonic: Note): number {
     const t = this.offset(a, 12 - noteIndex(tonic))[0];
-    return toneOctave(t);
+    return this.pitchOctave(t);
   },
   interval(a: Tone, b: Tone): number {
     return toneValue(b) - toneValue(a);
@@ -70,4 +120,8 @@ export function parseTone(s: string): [Tone | Note | undefined, string] {
     return [note, rrest];
   }
   return [tone(note, +n), rest];
+}
+
+export function isTone(s: string): s is Tone {
+  return isNote(s) && toneOctave(s as Tone) < 10;
 }

@@ -5,7 +5,6 @@ import { parseTone, tone, Tone, toneNote, toneOps } from "./tone";
 export const standardTuning: Note[] = ["E", "A", "D", "G", "B", "E"];
 export const allFourthsTuning: Note[] = ["E", "A", "D", "G", "C", "F"];
 export const dropD: Note[] = ["D", "A", "D", "G", "B", "E"];
-export const myTuning: Note[] = ["D", "A", "D", "G", "C", "F"];
 
 export type Tuning = {
   name: string;
@@ -14,20 +13,16 @@ export type Tuning = {
 
 export const allTunings: TonalTuning[] = [
   {
-    name: "Standard Tuning",
+    name: "Standard",
     notes: standardTuning,
   },
   {
-    name: "All Fourths Tuning",
+    name: "All Fourths Standard",
     notes: allFourthsTuning,
   },
   {
-    name: "Drop D Tuning",
+    name: "Drop D",
     notes: dropD,
-  },
-  {
-    name: "Kaden's Tuning",
-    notes: myTuning,
   },
 ].map((x) => toTonalTuning(x, 2));
 

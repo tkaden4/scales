@@ -5,6 +5,9 @@ export type HeptatonicScaleFormula = [NoteIndex, NoteIndex, NoteIndex, NoteIndex
 export type ScaleDegree<Scale extends number[]> = keyof Scale;
 export type HeptatonicScaleDegree = ScaleDegree<HeptatonicScaleFormula>;
 
+export const naturalPentatonic = (scale: HeptatonicScaleFormula) =>
+  scale.flatMap((x, i) => (i === 1 || i === 5 ? [] : [x]));
+
 export const majorScaleFormula: HeptatonicScaleFormula = [0, 2, 4, 5, 7, 9, 11];
 export const minorScaleFormula: HeptatonicScaleFormula = [0, 2, 3, 5, 7, 8, 10];
 export const harmonicMinorScaleFormula: HeptatonicScaleFormula = [0, 2, 3, 5, 7, 8, 11];
@@ -97,6 +100,32 @@ export const allScales: Scale[] = [
   harmonicMinorScale,
   doubleHarmonicMinorScale,
   chromaticScale,
+  {
+    name: "Pentatonic Minor",
+    key(note): Key {
+      return {
+        keynote: note,
+        name: `${note} Pentatonic Minor`,
+        scaleFormula: {
+          degrees: 5,
+          ...naturalPentatonic(minorScaleFormula),
+        },
+      };
+    },
+  },
+  {
+    name: "Pentatonic Major",
+    key(note): Key {
+      return {
+        keynote: note,
+        name: `${note} Pentatonic Major`,
+        scaleFormula: {
+          degrees: 5,
+          ...naturalPentatonic(majorScaleFormula),
+        },
+      };
+    },
+  },
   ...modes.map((mode) => ({
     name: mode.name,
     key: (note: Note): Key => ({

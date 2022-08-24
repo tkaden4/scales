@@ -21,8 +21,8 @@ export interface GuitarColors {
   stringcolor: ColorLike;
 }
 
-export function octaveColor(tone: tone.Tone, keyCenter: Note, octaveColors: ColorLike[]) {
-  return coerceColor(octaveColors[toneOps.octaveOffset(tone, keyCenter) % octaveColors.length]);
+export function octaveColor(t: tone.Tone, keyCenter: Note, octaveColors: ColorLike[]) {
+  return coerceColor(octaveColors[toneOps.octaveOffset(t, keyCenter) % octaveColors.length]);
 }
 
 export type GuitarNoteProvider = (tone: tone.Tone[], guitarProps: GuitarProps) => FretProvider;
@@ -55,7 +55,7 @@ export function defaultGetGuitarLabel(fret: number, upper: boolean) {
       }}
     >
       {"⬤"
-        .repeat(fret % 12 ? 1 : 2)
+        .repeat(fret % 12 ? 1 : fret / 12 + 1)
         .split("")
         .join(" ")}
     </div>
@@ -159,8 +159,6 @@ export function defaultGetGuitarFret(
         textAlign: "center",
         justifyContent: "center",
         alignItems: "center",
-        cursor: "pointer",
-        userSelect: "none",
         boxSizing: fret > 0 && "border-box",
         ...withBorder,
         ...(fret === 0 ? { borderRight: `10px solid ${nutColor}` } : withString(undefined)),
@@ -168,7 +166,6 @@ export function defaultGetGuitarFret(
     >
       {(filtered.length !== 1 ? notes : filtered).map((tone, key) => (
         <Tone
-          audible
           showTone={showTone}
           key={key}
           tone={tone}

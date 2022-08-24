@@ -6,6 +6,14 @@ export type FlatNote = `${NaturalNote}b`;
 export type Note = NaturalNote | SharpNote | FlatNote;
 export type Accidental = SharpNote | FlatNote;
 
+export function sharpen(note: Note): Note[] {
+  return indexToNote(noteOps.offset(note, 1));
+}
+
+export function flatten(note: Note): Note[] {
+  return indexToNote(noteOps.offset(note, -1));
+}
+
 export const allNotes = _.range(0, 12)
   .map((idx) => indexToNote(idx as any))
   .flat()

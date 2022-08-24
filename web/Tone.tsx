@@ -1,17 +1,44 @@
 import React from "react";
-import { playTone } from "../src/sound";
 import * as tone from "../src/tone";
 import { toneNote } from "../src/tone";
 import { ColorLike, colorValue } from "../src/util";
 
-export type Circle = {
+export type CircleButtonProps = {
+  onClick?: () => void;
+  onHover?: () => void;
+  onHoverEnd?: () => void;
+} & CircleProps;
+
+export function CircleButton(props: CircleButtonProps) {
+  return (
+    <span
+      style={{
+        cursor: "pointer",
+        userSelect: "none",
+      }}
+      onClick={props.onClick}
+      onMouseEnter={props.onHover}
+      onMouseLeave={props.onHoverEnd}
+    >
+      <Circle {...props} />
+    </span>
+  );
+}
+
+export type CircleProps = {
   color: ColorLike;
-  border: string;
+  border?: string;
   children: any;
 };
 
-export function Circle({ color, children, border }: Circle) {
-  return <div className="fretboard-note" style={{ backgroundColor: colorValue(color), border }} children={children} />;
+export function Circle({ color, children, border = "" }: CircleProps) {
+  return (
+    <div
+      className="fretboard-note"
+      style={{ backgroundColor: colorValue(color), border, userSelect: "none" }}
+      children={children}
+    />
+  );
 }
 
 export type ToneProps = {
@@ -20,23 +47,12 @@ export type ToneProps = {
   tone: tone.Tone;
   showTone: boolean;
   includeOctave?: boolean;
-  audible?: boolean;
 };
 
 export function Tone(props: ToneProps) {
   return (
-    <span
-      onClick={
-        props.audible
-          ? () => {
-              playTone(props.tone);
-            }
-          : () => {}
-      }
-    >
-      <Circle color={props.color} border={props.border ?? ""}>
-        {props.showTone ? (props.includeOctave ?? true ? props.tone : toneNote(props.tone)) : ""}
-      </Circle>
-    </span>
+    <Circle color={props.color} border={props.border ?? ""}>
+      {props.showTone ? (props.includeOctave ?? true ? props.tone : toneNote(props.tone)) : ""}
+    </Circle>
   );
 }
