@@ -9,6 +9,7 @@ export interface Theme {
   secondaryColor: ColorLike;
   guitarColors: GuitarColors;
   mutedColor: ColorLike;
+  neutralColor: ColorLike;
 }
 
 export const defaultTheme: Theme = {
@@ -19,6 +20,7 @@ export const defaultTheme: Theme = {
   secondaryColor: "#ff5070",
   mutedColor: "#dadada",
   backgroundColor: "ghostwhite",
+  neutralColor: "grey",
   textColor: "#0a0a0c",
   guitarColors: {
     stringcolor: "#b0b0b0",
@@ -37,6 +39,7 @@ export const darkTheme: Theme = {
   textColor: "ghostwhite",
   backgroundColor: "#272229",
   mutedColor: coerceColor("#272229").lighten(0.2).alpha(0.95),
+  neutralColor: coerceColor("grey").darken(0.5),
   primaryColor: primary,
   secondaryColor: secondary,
   guitarColors: {

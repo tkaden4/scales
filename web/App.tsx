@@ -7,8 +7,10 @@ import { getPosition, positionGetFret, positionLength } from "../src/positions";
 import { allScales, majorScale } from "../src/scale";
 import { allTunings, parseTuning } from "../src/tunings";
 import { coerceColor, colorValue } from "../src/util";
+import { Dropdown } from "./Dropdown";
 import { numericLabel } from "./Fretboard";
 import { defaultGuitarNoteProvider, Guitar, GuitarPosition } from "./Guitar";
+import { Pill, PillButton } from "./Pill";
 import { themes } from "./theme";
 import { ThemeConsumer, ThemeProvider } from "./ThemeContext";
 import { Tone } from "./Tone";
@@ -17,7 +19,6 @@ import { Tone } from "./Tone";
 // the query string for you.
 function useQuery() {
   const { search } = useLocation();
-
   return React.useMemo(() => new URLSearchParams(search), [search]);
 }
 
@@ -26,15 +27,18 @@ type ScaleToolProps = {
   keyCenter: string;
   tuning: string;
   theme?: string;
+  tab?: string;
 };
 
-// TODO
+// TODO 1
 const positions = [1];
 
 export function getURLFromProps(props: ScaleToolProps) {
   return `?scale=${encodeURIComponent(props.scale)}&keyCenter=${encodeURIComponent(
     props.keyCenter
-  )}&tuning=${encodeURIComponent(props.tuning)}&theme=${props.theme ?? "light"}`;
+  )}&tuning=${encodeURIComponent(props.tuning)}&theme=${props.theme ?? "light"}${
+    props.tab === undefined ? "" : `&tab=${props.tab}`
+  }`;
 }
 
 export function parseCandidate(candidate: string) {
@@ -67,6 +71,8 @@ function ScaleTool(props: ScaleToolProps) {
   // Do i even
   document.body.style.backgroundColor = colorValue(theme.backgroundColor);
 
+  const [tab, setTab] = React.useState<string | undefined>("Fretboard");
+
   const Section = ({ children }: any) => {
     return (
       <>
@@ -98,148 +104,139 @@ function ScaleTool(props: ScaleToolProps) {
               color: colorValue(theme.textColor),
             }}
           >
-            <Section>
-              <h2>Theme</h2>
-              {themes.map((selectTheme, key) => (
-                <Link to={getURLFromProps({ ...props, theme: selectTheme.name })}>
-                  <div
-                    style={{
-                      display: "inline-block",
-                      marginRight: "10px",
-                      borderRadius: "5px",
-                      padding: "0 10px",
-                      color: "white",
-                      cursor: "pointer",
-                      backgroundColor: colorValue(
-                        selectTheme.name === selectedTheme ? theme.secondaryColor : theme.primaryColor
-                      ),
-                    }}
-                  >
-                    {selectTheme.name}
+            {/* Header */}
+            <div style={{ display: "flex", padding: "20px" }}>
+              <Dropdown title="Theme">
+                {themes.map((selectTheme, key) => (
+                  <div key={key} style={{ marginBottom: "5px" }}>
+                    <Link to={getURLFromProps({ ...props, theme: selectTheme.name })}>
+                      <Pill color={selectTheme.name === selectedTheme ? theme.secondaryColor : theme.primaryColor}>
+                        {selectTheme.name}
+                      </Pill>
+                    </Link>
                   </div>
-                </Link>
-              ))}
-            </Section>
-
-            <Section>
-              <h2>Tuning</h2>
-              {allTunings.map((tuning, key) => (
-                <Link to={getURLFromProps({ ...props, tuning: tuning.name })} key={key}>
-                  <div
-                    style={{
-                      display: "inline-block",
-                      marginRight: "10px",
-                      borderRadius: "5px",
-                      padding: "0 10px",
-                      color: "white",
-                      cursor: "pointer",
-                      backgroundColor: colorValue(
-                        tuning.name === selectedTuning.name ? theme.secondaryColor : theme.primaryColor
-                      ),
-                    }}
-                  >
-                    {tuning.name}
+                ))}
+              </Dropdown>
+              <Dropdown title="Tuning">
+                {allTunings.map((tuning, key) => (
+                  <div key={key} style={{ marginBottom: "5px" }}>
+                    <Link to={getURLFromProps({ ...props, tuning: tuning.name })}>
+                      <Pill color={tuning.name === selectedTuning.name ? theme.secondaryColor : theme.primaryColor}>
+                        {tuning.name}
+                      </Pill>
+                    </Link>
                   </div>
-                </Link>
-              ))}
-            </Section>
+                ))}
+              </Dropdown>
+              <Dropdown title="Scale">
+                {Object.entries(_.groupBy(allScales, (e) => e.key(keyCenter).scaleFormula.degrees)).map(
+                  ([degrees, scales], key) => (
+                    <>
+                      <h3>{degrees} note</h3>
+                      {scales.map((scale, scaleKey) => (
+                        <Link to={getURLFromProps({ ...props, scale: scale.name })} key={`${key}${scaleKey}`}>
+                          <div
+                            style={{
+                              display: "inline-block",
+                              marginRight: "10px",
+                              borderRadius: "5px",
+                              padding: "0 10px",
+                              color: "white",
+                              cursor: "pointer",
+                              backgroundColor: colorValue(
+                                scale.name === selectedScale.name ? theme.secondaryColor : theme.primaryColor
+                              ),
+                            }}
+                          >
+                            {scale.name}
+                          </div>
+                        </Link>
+                      ))}
+                    </>
+                  )
+                )}
+              </Dropdown>
+              <Dropdown title="Key">
+                {[...naturalNotes, ...accidentals].map((note, key) => (
+                  <Link to={getURLFromProps({ ...props, keyCenter: note })} key={key}>
+                    <div
+                      style={{
+                        display: "inline-block",
+                        marginRight: "10px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <Tone
+                        color={colorValue(note === keyCenter ? theme.secondaryColor : theme.primaryColor)}
+                        tone={`${note}0`}
+                        showTone
+                        border={`5px solid ${coerceColor(
+                          colorValue(note === keyCenter ? theme.secondaryColor : theme.primaryColor)
+                        ).lighten(0.3)}`}
+                        includeOctave={false}
+                      />
+                    </div>
+                  </Link>
+                ))}
+              </Dropdown>
+              |&nbsp;
+              <PillButton
+                color={tab === "Fretboard" ? theme.secondaryColor : theme.neutralColor}
+                onClick={() => setTab("Fretboard")}
+              >
+                Fretboard
+              </PillButton>
+              <PillButton
+                color={tab === "Positions" ? theme.secondaryColor : theme.neutralColor}
+                onClick={() => setTab("Positions")}
+              >
+                Positions
+              </PillButton>
+            </div>
 
-            <Section>
-              <h2>Key</h2>
-              {[...naturalNotes, ...accidentals].map((note, key) => (
-                <Link to={getURLFromProps({ ...props, keyCenter: note })} key={key}>
-                  <div
-                    style={{
-                      display: "inline-block",
-                      marginRight: "10px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <Tone
-                      color={colorValue(note === keyCenter ? theme.secondaryColor : theme.primaryColor)}
-                      tone={`${note}0`}
-                      showTone
-                      border={`5px solid ${coerceColor(
-                        colorValue(note === keyCenter ? theme.secondaryColor : theme.primaryColor)
-                      ).lighten(0.3)}`}
-                      includeOctave={false}
-                    />
-                  </div>
-                </Link>
-              ))}
-            </Section>
-            <Section>
-              <h2>Scale</h2>
-              {Object.entries(_.groupBy(allScales, (e) => e.key(keyCenter).scaleFormula.degrees)).map(
-                ([degrees, scales], key) => (
-                  <>
-                    <h3>{degrees} note</h3>
-                    {scales.map((scale, scaleKey) => (
-                      <Link to={getURLFromProps({ ...props, scale: scale.name })} key={`${key}${scaleKey}`}>
-                        <div
-                          style={{
-                            display: "inline-block",
-                            marginRight: "10px",
-                            borderRadius: "5px",
-                            padding: "0 10px",
-                            color: "white",
-                            cursor: "pointer",
-                            backgroundColor: colorValue(
-                              scale.name === selectedScale.name ? theme.secondaryColor : theme.primaryColor
-                            ),
-                          }}
-                        >
-                          {scale.name}
-                        </div>
-                      </Link>
-                    ))}
-                  </>
-                )
-              )}
-            </Section>
-
-            <Section>
-              <h2>Fretboard</h2>
-              <Guitar
-                tonality={tonality}
-                octaveColors
-                showOctaves
-                stringColor={theme.guitarColors.stringcolor}
-                fretColor={theme.guitarColors.fretColor}
-                outOfKeyColor={theme.mutedColor}
-                selectedColor={theme.secondaryColor}
-                unselectedColor={theme.primaryColor}
-                nutColor={theme.guitarColors.nutColor}
-                octaveColorsValues={theme.octaveColors}
-              />
-            </Section>
-            <br />
-            <Section>
-              <h2>Positions</h2>
-              {positions.map((position, positionKey) => {
-                const poz = getPosition(tonality, position);
-                return (
-                  <React.Fragment key={positionKey}>
-                    <GuitarPosition
+            {(() => {
+              switch (tab) {
+                case "Fretboard":
+                  return (
+                    <Guitar
+                      tonality={tonality}
                       octaveColors
                       showOctaves
-                      nutColor={theme.guitarColors.nutColor}
-                      fretColor={theme.guitarColors.fretColor}
                       stringColor={theme.guitarColors.stringcolor}
-                      octaveColorsValues={theme.octaveColors}
+                      fretColor={theme.guitarColors.fretColor}
                       outOfKeyColor={theme.mutedColor}
-                      tonality={tonality}
-                      labels
-                      getLabel={numericLabel(true)}
-                      startingFret={position - 1}
-                      frets={positionLength(poz)}
-                      getFret={positionGetFret(poz, (d) => defaultGuitarNoteProvider(d, false))}
+                      selectedColor={theme.secondaryColor}
+                      unselectedColor={theme.primaryColor}
+                      nutColor={theme.guitarColors.nutColor}
+                      octaveColorsValues={theme.octaveColors}
                     />
-                    <br />
-                  </React.Fragment>
-                );
-              })}
-            </Section>
+                  );
+                case "Positions":
+                  return positions.map((position, positionKey) => {
+                    const poz = getPosition(tonality, position);
+                    return (
+                      <React.Fragment key={positionKey}>
+                        <GuitarPosition
+                          octaveColors
+                          showOctaves
+                          nutColor={theme.guitarColors.nutColor}
+                          fretColor={theme.guitarColors.fretColor}
+                          stringColor={theme.guitarColors.stringcolor}
+                          octaveColorsValues={theme.octaveColors}
+                          outOfKeyColor={theme.mutedColor}
+                          tonality={tonality}
+                          labels
+                          getLabel={numericLabel(true)}
+                          startingFret={position - 1}
+                          frets={positionLength(poz)}
+                          getFret={positionGetFret(poz, (d) => defaultGuitarNoteProvider(d, false))}
+                        />
+                        <br />
+                      </React.Fragment>
+                    );
+                  });
+              }
+            })()}
           </div>
         )}
       </ThemeConsumer>
@@ -254,6 +251,7 @@ export function Main() {
   const tuning = query.get("tuning") ?? inStorage.tuning ?? allTunings[0].name;
   const scale = query.get("scale") ?? inStorage.scale ?? majorScale.name;
   const theme = query.get("theme") ?? inStorage.theme ?? undefined;
+  const tab = query.get("tab") ?? undefined;
   React.useEffect(() => {
     localStorage.setItem(
       "scale-props",
@@ -263,13 +261,14 @@ export function Main() {
           tuning,
           scale,
           theme,
+          tab,
         },
         null,
         0
       )
     );
   }, [query]);
-  return <ScaleTool keyCenter={keyCenter} scale={scale} tuning={tuning} theme={theme} />;
+  return <ScaleTool keyCenter={keyCenter} scale={scale} tuning={tuning} theme={theme} tab={tab} />;
 }
 
 export function App() {
