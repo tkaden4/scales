@@ -5,8 +5,6 @@ import { Note, noteIndex } from "./note";
 import { Tone, toneNote, toneOps } from "./tone";
 import { TonalTuning, Tuning } from "./tunings";
 
-export function noteDistance(tuning: Tuning, string0: number, fret0: number, string1: number, fret1: number) {}
-
 // TODO technically tunings use notes of particular absolute pitches, but we assume ascending notes here, never over an octave.
 // This is gonna work for guitar
 export function getTuningIntervals(tuning: Tuning): number[] {

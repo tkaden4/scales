@@ -3,13 +3,13 @@ import React from "react";
 import { HashRouter, Link, useLocation } from "react-router-dom";
 import { Tonality } from "../src";
 import { accidentals, allNotes, naturalNotes } from "../src/note";
-import { getPosition, positionGetFret, positionLength } from "../src/positions";
 import { allScales, majorScale } from "../src/scale";
 import { allTunings, parseTuning } from "../src/tunings";
 import { coerceColor, colorValue } from "../src/util";
 import { Dropdown } from "./Dropdown";
-import { numericLabel } from "./Fretboard";
-import { defaultGuitarNoteProvider, Guitar, GuitarPosition } from "./Guitar";
+import { ChordsPage } from "./pages/Chords";
+import { FretboardPage } from "./pages/Fretboard";
+import { PositionsPage } from "./pages/Positions";
 import { Pill, PillButton } from "./Pill";
 import { themes } from "./theme";
 import { ThemeConsumer, ThemeProvider } from "./ThemeContext";
@@ -104,9 +104,8 @@ function ScaleTool(props: ScaleToolProps) {
               color: colorValue(theme.textColor),
             }}
           >
-            {/* Header */}
             <div style={{ display: "flex", padding: "20px" }}>
-              <Dropdown title="Theme">
+              <Dropdown title={selectedTheme}>
                 {themes.map((selectTheme, key) => (
                   <div key={key} style={{ marginBottom: "5px" }}>
                     <Link to={getURLFromProps({ ...props, theme: selectTheme.name })}>
@@ -117,7 +116,7 @@ function ScaleTool(props: ScaleToolProps) {
                   </div>
                 ))}
               </Dropdown>
-              <Dropdown title="Tuning">
+              <Dropdown title={tonality.tuning.name}>
                 {allTunings.map((tuning, key) => (
                   <div key={key} style={{ marginBottom: "5px" }}>
                     <Link to={getURLFromProps({ ...props, tuning: tuning.name })}>
@@ -128,18 +127,19 @@ function ScaleTool(props: ScaleToolProps) {
                   </div>
                 ))}
               </Dropdown>
-              <Dropdown title="Scale">
+              <Dropdown title={tonality.scale.name}>
                 {Object.entries(_.groupBy(allScales, (e) => e.key(keyCenter).scaleFormula.degrees)).map(
                   ([degrees, scales], key) => (
-                    <>
-                      <h3>{degrees} note</h3>
+                    <div style={{ display: "flex", flexDirection: "column" }}>
                       {scales.map((scale, scaleKey) => (
                         <Link to={getURLFromProps({ ...props, scale: scale.name })} key={`${key}${scaleKey}`}>
                           <div
                             style={{
                               display: "inline-block",
-                              marginRight: "10px",
+                              flexBasis: "initial",
+                              marginTop: "10px",
                               borderRadius: "5px",
+                              flexShrink: "0",
                               padding: "0 10px",
                               color: "white",
                               cursor: "pointer",
@@ -152,17 +152,17 @@ function ScaleTool(props: ScaleToolProps) {
                           </div>
                         </Link>
                       ))}
-                    </>
+                    </div>
                   )
                 )}
               </Dropdown>
-              <Dropdown title="Key">
+              <Dropdown title={tonality.keyCenter}>
                 {[...naturalNotes, ...accidentals].map((note, key) => (
                   <Link to={getURLFromProps({ ...props, keyCenter: note })} key={key}>
                     <div
                       style={{
+                        marginTop: "5px",
                         display: "inline-block",
-                        marginRight: "10px",
                         cursor: "pointer",
                       }}
                     >
@@ -186,55 +186,28 @@ function ScaleTool(props: ScaleToolProps) {
               >
                 Fretboard
               </PillButton>
-              <PillButton
+              {/* <PillButton
                 color={tab === "Positions" ? theme.secondaryColor : theme.neutralColor}
                 onClick={() => setTab("Positions")}
               >
                 Positions
-              </PillButton>
+              </PillButton> */}
+              {/* <PillButton
+                color={tab === "Chords" ? theme.secondaryColor : theme.neutralColor}
+                onClick={() => setTab("Chords")}
+              >
+                Chords
+              </PillButton> */}
             </div>
 
             {(() => {
               switch (tab) {
                 case "Fretboard":
-                  return (
-                    <Guitar
-                      tonality={tonality}
-                      octaveColors
-                      showOctaves
-                      stringColor={theme.guitarColors.stringcolor}
-                      fretColor={theme.guitarColors.fretColor}
-                      outOfKeyColor={theme.mutedColor}
-                      selectedColor={theme.secondaryColor}
-                      unselectedColor={theme.primaryColor}
-                      nutColor={theme.guitarColors.nutColor}
-                      octaveColorsValues={theme.octaveColors}
-                    />
-                  );
+                  return <FretboardPage tonality={tonality} />;
                 case "Positions":
-                  return positions.map((position, positionKey) => {
-                    const poz = getPosition(tonality, position);
-                    return (
-                      <React.Fragment key={positionKey}>
-                        <GuitarPosition
-                          octaveColors
-                          showOctaves
-                          nutColor={theme.guitarColors.nutColor}
-                          fretColor={theme.guitarColors.fretColor}
-                          stringColor={theme.guitarColors.stringcolor}
-                          octaveColorsValues={theme.octaveColors}
-                          outOfKeyColor={theme.mutedColor}
-                          tonality={tonality}
-                          labels
-                          getLabel={numericLabel(true)}
-                          startingFret={position - 1}
-                          frets={positionLength(poz)}
-                          getFret={positionGetFret(poz, (d) => defaultGuitarNoteProvider(d, false))}
-                        />
-                        <br />
-                      </React.Fragment>
-                    );
-                  });
+                  return <PositionsPage positions={positions} tonality={tonality} />;
+                case "Chords":
+                  return <ChordsPage tonality={tonality} />;
               }
             })()}
           </div>

@@ -7,7 +7,7 @@
   "scripts": {
     "postinstall": "yarn build",
     "build": "rimraf -r docs && parcel build web/index.html --dist-dir docs --public-url https://tkaden4.github.io/scales/ --no-source-maps",
-    "dev": "parcel web/index.html"
+    "dev": "parcel web/index.html -p 8090"
   },
   "devDependencies": {
     "@types/color": "^3.0.3",
